@@ -7,7 +7,7 @@ real footage of a live run recorded with Playwright (`scripts/pitch/record.mjs`)
 `scripts/pitch/hf-build.mjs` into a HyperFrames composition (title → board + phone with captions →
 Solana Explorer close-up → end card), narration via macOS `say`, rendered by `hyperframes render`
 in 2m51s. Safe fallback cut (ffmpeg, no cards): `midnight-express-pitch.mp4`, 116 s.
-**v2 (in progress, self-starts 17:11 after the slot):** same pipeline, narration by **Gemini TTS
+**v2 — DONE, frame-verified 17:30 (`midnight-express-pitch-v2.mp4`, 120.0 s, 27 MB):** same pipeline, narration by **Gemini TTS
 `gemini-3.1-flash-tts-preview` / voice Charon** (Raghav's pick over Kore/Fenrir/Algieba and ElevenLabs),
 scoreboard clipping fixed on the board. `scripts/pitch/v2-chain.sh` → `midnight-express-pitch-v2.mp4`.
 Narrator is env-driven: `NARRATOR=elevenlabs|gemini|say`, `TTS_MODEL`, `TTS_VOICE`, `ELEVENLABS_VOICE_ID`. Repo: https://github.com/sraghav12/midnight-express · Live: https://155-138-204-133.sslip.io/play*
