@@ -151,6 +151,11 @@ Each of these would only have shown up in front of a judge:
    rival" was 100% heuristic. With reasoning on it picks the right route 4/4 in ~2s. Now: one
    reasoning call per junction, never overlapping; the count is on `/health`. Do not claim
    more than this to the IFM judges.
+15. **v2 video narrated by the wrong voice.** The HyperFrames composer never imported `server/env.js`,
+    so `GEMINI_API_KEY` was invisible to it and all nine narration lines silently fell back to macOS `say`
+    — the exact voice the v2 existed to replace. Caught by reading the build log, not by listening. Fix:
+    load `.env` first in the composer. Third time tonight config was invisible to a process (see 11, 12):
+    the lesson is that "the key is set" means nothing until the *consuming process* prints that it sees it.
 14. **Scoreboard clipped in a 900px frame** — the replay panes' labels were cut off at the top of the
     board (visible in the v1 video at ~96 s). Panes 300→240px, tighter gaps, overflow hidden. Loads on the
     v2 bounce.

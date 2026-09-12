@@ -1,5 +1,6 @@
 // Build a 120s HyperFrames composition from the recorded run + timeline.
 //   node scripts/pitch/hf-build.mjs <scratch/video> <hf/pitch>
+import "../../server/env.js";   // load .env FIRST -- without this the TTS keys are invisible and every line falls back to `say`
 import fs from "node:fs"; import path from "node:path"; import { execSync } from "node:child_process";
 const [SCR, PROJ] = process.argv.slice(2);
 const T = JSON.parse(fs.readFileSync(path.join(SCR, "timeline.json"), "utf8"));
