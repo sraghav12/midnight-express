@@ -106,7 +106,12 @@ const caps = [
   [tAuc + 17, 7, "Dispatcher voice: Gemini"],
   [tEnd + 1.5, 10, `The room vs. one dispatcher: ${ratio ? ratio.toFixed(1) + "×" : "2–3×"} the delay`],
   [tRecap + 0.8, 6, "Run report: written by Grok"],
-].map(([t, d, text]) => ({ c: toComp(t), d, text })).filter(x => x.c !== null && x.c + x.d <= mainEnd + 1);
+].map(([t, d, text]) => ({ c: toComp(t), d, text })).filter(x => x.c !== null && x.c + x.d <= mainEnd + 1)
+  .sort((a, b) => a.c - b.c)
+  // Captions share one lower-third slot: a caption may not start until the previous one has
+  // cleared (Grok's recap once arrived 0.5s after run end and painted over the ratio caption).
+  .reduce((acc, x) => { const prev = acc.at(-1); const start = prev ? Math.max(x.c, prev.c + prev.d + 0.4) : x.c;
+    const d = Math.min(x.d, Math.max(3, mainEnd - start)); if (d >= 3) acc.push({ ...x, c: start, d }); return acc; }, []);
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 const vid = (id, src, k, x, y, w, h) => `<video id="${id}" class="clip" data-start="${k.c.toFixed(2)}" data-duration="${k.d.toFixed(2)}" data-media-start="${k.m.toFixed(2)}" data-has-audio="false" src="${src}" muted playsinline style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;object-fit:cover;border:1px solid #2A2438;border-radius:8px;background:#08070C"></video>`;

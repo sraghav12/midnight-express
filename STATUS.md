@@ -151,6 +151,9 @@ Each of these would only have shown up in front of a judge:
    rival" was 100% heuristic. With reasoning on it picks the right route 4/4 in ~2s. Now: one
    reasoning call per junction, never overlapping; the count is on `/health`. Do not claim
    more than this to the IFM judges.
+17. **Two captions painted over each other** at the scoreboard: Grok's recap arrived 0.5 s after run
+    end, so its caption started while the ratio caption still had 9 s to run. Captions now share one
+    lower-third slot and are sequenced — none may start before the previous has cleared.
 16. **Gemini TTS quota ran out mid-build.** Four voice A/B clips plus a test line spent the free-tier
     TTS quota; the v2 build then voiced 7 lines in Charon and silently fell back to `say` for the last 2
     — a robot voice appearing at the video's close. Now: the composer keeps lines Gemini already voiced
