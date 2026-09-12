@@ -145,6 +145,7 @@
     <div class="eyebrow">Scan to board a train</div>
     <img id="qr" src="/qr.png" alt="Scan to join">
     <div class="u" id="joinUrl">—</div>
+    <div class="eyebrow" style="margin-top:10px;color:var(--paper-faint)">new here? <span id="howUrl">/how.html</span></div>
   </div>
   <div class="sec" id="auctionBox">
     <div class="eyebrow">Contested track</div>
@@ -162,7 +163,7 @@ let net = null, state = null, tickHz = 20, flash = new Map(), ws;
 const smooth = new Map();   // trainId -> {x,y} rendered position, lerped toward target
 
 fetch("/join-url").then(r => r.json())
-  .then(d => { $("joinUrl").textContent = d.url.replace(/^https?:\/\//, ""); }).catch(()=>{});
+  .then(d => { $("joinUrl").textContent = d.url.replace(/^https?:\/\//, ""); $("howUrl").textContent = d.url.replace(/^https?:\/\//, "").replace(/\/play$/, "/how.html"); }).catch(()=>{});
 
 function connect() {
   ws = new WebSocket(`${proto}//${location.host}/?role=screen`);

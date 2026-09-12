@@ -83,6 +83,7 @@ const server = http.createServer((req, res) => {
   }
   let file = url === "/" ? "/screen.html" : url;
   if (url === "/play" || url === "/p") file = "/phone.html";
+  if (url === "/how" || url === "/help" || url === "/rules") file = "/how.html";
   const full = path.join(PUBLIC, path.normalize(file).replace(/^(\.\.[/\\])+/, ""));
   fs.readFile(full, (err, data) => {
     if (err) { res.writeHead(404); return res.end("not found"); }

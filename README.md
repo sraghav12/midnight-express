@@ -39,3 +39,5 @@ Node + `ws` (20 Hz authoritative sim) · vanilla JS + canvas clients, no build s
 `@solana/web3.js` on devnet, Anchor program with MagicBlock ER delegation (compiled, client-verified) ·
 IFM K2 Horizon under `MBZUAI-IFM/llama.cpp` · Gemini via its OpenAI-compatible endpoint ·
 Vultr + Caddy + Let's Encrypt.
+
+**How to play:** [`/how`](public/how.html) — one-page rules for players, linked from the join screen and under the board's QR.
