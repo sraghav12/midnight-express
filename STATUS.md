@@ -141,6 +141,11 @@ Each of these would only have shown up in front of a judge:
    rival" was 100% heuristic. With reasoning on it picks the right route 4/4 in ~2s. Now: one
    reasoning call per junction, never overlapping; the count is on `/health`. Do not claim
    more than this to the IFM judges.
+13. **Run receipt too large for Solana.** With 8 co-signers and a 12-train crew JSON the receipt
+    hit `Transaction too large: 1270 > 1232` — the closing "View this run on Solana" link never
+    appeared while every per-auction link did. Now: up to 4 human co-signers, and if still over
+    the cap, a treasury-only receipt. Also one retry on a failed auction write (1 of 8 failed at
+    simulation in the same run).
 12. **The `.env` move took the chain down.** The template line `TREASURY_SECRET_KEY=   # base58…`
     (empty value + comment) was loaded as the literal string `# base58…`; the memo adapter
     `JSON.parse`d it and disabled itself. Loader now treats comment-only values as empty, and a

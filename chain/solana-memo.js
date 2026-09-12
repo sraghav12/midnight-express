@@ -147,12 +147,17 @@ export class SolanaMemoAdapter {
       ...Object.keys(view.compensation).map((id) => this.keyFor(id)),
     ];
     this.pending++;
-    this.#memo(memo, keys)
+    const attempt = (n) => this.#memo(memo, keys).catch(async (e) => {
+      if (n === 0) throw e;
+      await new Promise((r) => setTimeout(r, 1200));   // fresh blockhash, past any burst
+      return attempt(n - 1);
+    });
+    attempt(1)
       .then((sig) => {
         this.sigs.push({ auctionId: view.auctionId, sig });
         this.onAuctionSig({ auctionId: view.auctionId, sig, explorerUrl: explorerTx(sig) });
       })
-      .catch((e) => console.warn(`[chain] auction ${view.auctionId} write failed: ${e.message.slice(0, 90)}${e.logs ? " | " + e.logs.slice(-2).join(" / ") : ""}`))
+      .catch((e) => console.warn(`[chain] auction ${view.auctionId} write failed after retry: ${e.message.slice(0, 90)}${e.logs ? " | " + e.logs.slice(-2).join(" / ") : ""}`))
       .finally(() => this.pending--);
   }
 
@@ -171,7 +176,18 @@ export class SolanaMemoAdapter {
       auctions: this.sigs.length,
     });
     try {
-      const sig = await this.#memo(memo, summary.trains.filter((t) => !t.isAgent).slice(0, 8).map((t) => this.keyFor(t.id)));
+      // Solana transactions cap at 1232 bytes. Every co-signer costs 64B (signature)
+      // + 32B (account key), and the crew JSON grows with the room. Co-sign with up to
+      // four humans; if that is still too large, the receipt lands treasury-only --
+      // a receipt that exists beats a beautifully signed one that does not.
+      const humans = summary.trains.filter((t) => !t.isAgent).slice(0, 4).map((t) => this.keyFor(t.id));
+      let sig;
+      try { sig = await this.#memo(memo, humans); }
+      catch (e) {
+        if (!/too large/i.test(e.message)) throw e;
+        console.warn(`[chain] receipt too large with ${humans.length} co-signers -- retrying treasury-only`);
+        sig = await this.#memo(memo, []);
+      }
       const receipt = { runId, sig, explorerUrl: explorerTx(sig) };
       this.onReceipt(receipt);
       console.log(`[chain] run receipt ${explorerTx(sig)}`);
