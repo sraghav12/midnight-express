@@ -88,13 +88,13 @@
 
   /* ---------- scoreboard ---------- */
   #board{position:absolute;inset:0;background:rgba(8,7,12,.975);display:none;
-         flex-direction:column;justify-content:center;align-items:center;gap:var(--s6);padding:var(--s8)}
+         flex-direction:column;justify-content:center;align-items:center;gap:var(--s5);padding:var(--s6) var(--s8);overflow:hidden}
   #board .eyebrow{color:var(--paper-dim)}
   .replay{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6);width:min(1180px,92%)}
   .replay .pane{position:relative;border:1px solid var(--ink-600);border-radius:var(--r-md);
                 background:var(--ink-800);overflow:hidden}
-  .replay canvas{display:block;width:100%;height:300px}
-  .replay .lbl{position:absolute;top:12px;left:14px;font-size:var(--fb-eyebrow);
+  .replay canvas{display:block;width:100%;height:240px}
+  .replay .lbl{position:absolute;top:10px;left:14px;font-size:var(--fb-eyebrow);z-index:1;
                letter-spacing:var(--track-label);text-transform:uppercase}
   .replay .lbl.human{color:var(--paper)} .replay .lbl.central{color:var(--signal-green)}
   .replay .t{position:absolute;top:12px;right:14px;font-family:var(--serif);font-size:var(--fb-lg);

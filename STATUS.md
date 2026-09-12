@@ -6,7 +6,11 @@
 real footage of a live run recorded with Playwright (`scripts/pitch/record.mjs`), composed by
 `scripts/pitch/hf-build.mjs` into a HyperFrames composition (title → board + phone with captions →
 Solana Explorer close-up → end card), narration via macOS `say`, rendered by `hyperframes render`
-in 2m51s. Safe fallback cut (ffmpeg, no cards): `midnight-express-pitch.mp4`, 116 s. Repo: https://github.com/sraghav12/midnight-express · Live: https://155-138-204-133.sslip.io/play*
+in 2m51s. Safe fallback cut (ffmpeg, no cards): `midnight-express-pitch.mp4`, 116 s.
+**v2 (in progress, self-starts 17:11 after the slot):** same pipeline, narration by **Gemini TTS
+`gemini-3.1-flash-tts-preview` / voice Charon** (Raghav's pick over Kore/Fenrir/Algieba and ElevenLabs),
+scoreboard clipping fixed on the board. `scripts/pitch/v2-chain.sh` → `midnight-express-pitch-v2.mp4`.
+Narrator is env-driven: `NARRATOR=elevenlabs|gemini|say`, `TTS_MODEL`, `TTS_VOICE`, `ELEVENLABS_VOICE_ID`. Repo: https://github.com/sraghav12/midnight-express · Live: https://155-138-204-133.sslip.io/play*
 
 ## Works right now, no keys, no funding
 
@@ -147,6 +151,9 @@ Each of these would only have shown up in front of a judge:
    rival" was 100% heuristic. With reasoning on it picks the right route 4/4 in ~2s. Now: one
    reasoning call per junction, never overlapping; the count is on `/health`. Do not claim
    more than this to the IFM judges.
+14. **Scoreboard clipped in a 900px frame** — the replay panes' labels were cut off at the top of the
+    board (visible in the v1 video at ~96 s). Panes 300→240px, tighter gaps, overflow hidden. Loads on the
+    v2 bounce.
 13. **Run receipt too large for Solana.** With 8 co-signers and a 12-train crew JSON the receipt
     hit `Transaction too large: 1270 > 1232` — the closing "View this run on Solana" link never
     appeared while every per-auction link did. Measured: 8 co-signers = exactly 1232 bytes with a
