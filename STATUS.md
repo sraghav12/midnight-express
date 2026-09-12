@@ -1,6 +1,6 @@
 # Midnight Express — status
 
-*Updated 2026-09-12, ~01:30. Submission 4:00 PM today. **G1 PASSED on cellular.***
+*Updated 2026-09-12, 3:30 PM. **Form due 4:00 PM.** Repo: https://github.com/sraghav12/midnight-express · Live: https://155-138-204-133.sslip.io/play*
 
 ## Works right now, no keys, no funding
 

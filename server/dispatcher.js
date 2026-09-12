@@ -22,6 +22,9 @@ const MODE = process.env.DISPATCHER_MODE || "auto";   // auto | rules | off
 // DISPATCHER_PROVIDER=gemini to give the dispatcher its own model -- two models,
 // two honest sponsor claims: K2 routes the rival, Gemini speaks over the PA.
 const VOICE_PROVIDER = process.env.DISPATCHER_PROVIDER || null;
+// The end-of-run report can come from a different model than the PA lines --
+// e.g. RECAP_PROVIDER=xai lets Grok file the report while Gemini works the PA.
+const RECAP_PROVIDER = process.env.RECAP_PROVIDER || VOICE_PROVIDER;
 
 export class Dispatcher {
   constructor({ run, say = () => {}, apiKey = process.env.GEMINI_API_KEY } = {}) {
@@ -114,7 +117,7 @@ export class Dispatcher {
    * to the board as the verdict subtitle. Falls back to the rule-based line.
    */
   recap(summary) {
-    if (!this.enabled || !VOICE_PROVIDER) return;
+    if (!this.enabled || !RECAP_PROVIDER) return;
     const sb = summary.scoreboard; const b = summary.baselineDelay;
     const humans = (summary.trains || []).filter((t) => !t.isAgent);
     const best = humans.slice().sort((x, y) => x.delayTicks - y.delayTicks)[0];
@@ -138,7 +141,7 @@ export class Dispatcher {
       `Write TWO short sentences (under 40 words total) from these facts only, dry and a little wry. ` +
       `Sentence 1: the comparison, keeping its direction exactly (the central dispatcher was faster). ` +
       `Sentence 2: one human by name. Do not invent numbers.\n${JSON.stringify(facts)}`,
-      { maxTokens: 90, timeoutMs: 8000, temperature: 0.8, provider: VOICE_PROVIDER },
+      { maxTokens: 90, timeoutMs: 8000, temperature: 0.8, provider: RECAP_PROVIDER },
     ).then((out) => {
       const line = (out || "").trim().replace(/\s+/g, " ");
       if (line && line.length < 320) { this.spoken++; this.say(line, { kind: "recap" }); }
