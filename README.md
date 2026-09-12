@@ -12,7 +12,8 @@ no wallet, no signup.
 - **Gemini** voices the dispatcher over the PA and writes the end-of-run report from the real scoreboard.
 - Every run replays side by side against a **centralized dispatcher** that had full information — the room does 2–3× worse. That gap is the price of everyone acting in their own interest.
 
-**Live:** https://155-138-204-133.sslip.io/play
+**Live:** https://155-138-204-133.sslip.io/play — open it on a phone, type a name, you're driving in five seconds.
+**Pitch video (2:00):** in the submission Drive folder. **Sponsor evidence with transaction links:** `SPONSORS.md`.
 
 ## Run it
 
