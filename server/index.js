@@ -38,7 +38,7 @@ function lanIP() {
  * is localhost, substitute the LAN IP, because "localhost" on a phone means the phone.
  */
 function joinURL(reqHost) {
-  if (process.env.PUBLIC_URL) return process.env.PUBLIC_URL;
+  if (process.env.PUBLIC_URL) { const u = process.env.PUBLIC_URL.replace(/\/$/, ""); return /\/(play|p)$/.test(u) ? u : u + "/play"; }
   // A tunnel writes its URL here after boot, so the QR updates with no restart.
   try {
     const f = path.join(__dirname, "..", ".public-url");

@@ -163,7 +163,7 @@ let net = null, state = null, tickHz = 20, flash = new Map(), ws;
 const smooth = new Map();   // trainId -> {x,y} rendered position, lerped toward target
 
 fetch("/join-url").then(r => r.json())
-  .then(d => { $("joinUrl").textContent = d.url.replace(/^https?:\/\//, ""); $("howUrl").textContent = d.url.replace(/^https?:\/\//, "").replace(/\/play$/, "/how.html"); }).catch(()=>{});
+  .then(d => { $("joinUrl").textContent = d.url.replace(/^https?:\/\//, ""); $("howUrl").textContent = d.url.replace(/^https?:\/\//, "").replace(/\/(play|p)?\/?$/, "") + "/how.html"; }).catch(()=>{});
 
 function connect() {
   ws = new WebSocket(`${proto}//${location.host}/?role=screen`);
