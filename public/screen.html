@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Midnight Express — Dispatch Board</title>
+<link rel="stylesheet" href="/tokens.css">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--ink-900);color:var(--paper);overflow:hidden}
+  body{font-family:var(--sans);display:grid;grid-template-columns:1fr 380px;height:100vh}
+
+  main{position:relative;min-width:0}
+  canvas{display:block;width:100%;height:100%}
+
+  /* ---------- deco frame ---------- */
+  .frame{position:absolute;inset:18px;border:1px solid var(--ink-600);pointer-events:none}
+  .frame::before,.frame::after{content:"";position:absolute;background:var(--brass-500)}
+  .frame::before{left:-1px;top:-1px;width:90px;height:3px}
+  .frame::after{right:-1px;bottom:-1px;width:90px;height:3px}
+
+  .masthead{position:absolute;top:46px;left:56px;pointer-events:none}
+  .masthead h1{
+    margin:0;font-family:var(--serif);font-size:var(--fb-display);
+    letter-spacing:.26em;text-transform:uppercase;color:var(--brass-400);line-height:1
+  }
+  .masthead .sub{margin-top:10px;display:flex;align-items:center;gap:12px}
+  .masthead .sub span{font-size:var(--fb-eyebrow);letter-spacing:var(--track-label);
+    text-transform:uppercase;color:var(--paper-faint)}
+  .masthead .bar{width:70px;height:2px;background:var(--brass-700)}
+
+  .clock{position:absolute;top:46px;right:56px;text-align:right;pointer-events:none}
+  .clock b{display:block;font-family:var(--serif);font-size:var(--fb-huge);
+    line-height:.9;color:var(--paper);font-variant-numeric:tabular-nums}
+  .clock span{font-size:var(--fb-eyebrow);letter-spacing:var(--track-label);
+    text-transform:uppercase;color:var(--paper-faint)}
+
+  /* floating chip over a contested segment */
+  .chip{
+    position:absolute;transform:translate(-50%,-50%);pointer-events:none;
+    background:#2A0C18;border:1px solid var(--signal-red);border-radius:var(--r-pill);
+    padding:7px 16px;white-space:nowrap;box-shadow:0 0 28px rgba(255,84,112,.45)
+  }
+  #pa{position:absolute;left:56px;bottom:46px;right:56px;pointer-events:none;
+      display:flex;align-items:center;gap:14px;opacity:0;transition:opacity .25s}
+  #pa.on{opacity:1}
+  #pa .ico{width:34px;height:34px;flex:0 0 auto}
+  #pa .txt{font-family:var(--serif);font-size:var(--fb-xl);color:var(--brass-300);
+           letter-spacing:var(--track-tight);text-shadow:0 2px 18px rgba(0,0,0,.9)}
+  .chip b{font-size:var(--fb-eyebrow);letter-spacing:var(--track-label);
+    text-transform:uppercase;color:var(--signal-red)}
+  .chip i{font-style:normal;color:var(--paper);font-size:var(--fb-body);margin-left:10px}
+
+  /* ---------- sidebar ---------- */
+  aside{border-left:1px solid var(--ink-600);background:var(--ink-800);
+        display:flex;flex-direction:column;min-height:0}
+  .join{padding:var(--s5);text-align:center;border-bottom:1px solid var(--ink-600)}
+  .join .eyebrow{margin-bottom:var(--s3);color:var(--brass-400)}
+  .join img{width:100%;max-width:250px;border-radius:var(--r-md);display:block;margin:0 auto var(--s3);
+            border:3px solid var(--brass-500)}
+  .join .u{font-size:var(--fb-body);color:var(--brass-400);word-break:break-all;font-variant-numeric:tabular-nums}
+
+  .sec{padding:var(--s4) var(--s5)}
+  .sec > .eyebrow{margin-bottom:var(--s3)}
+  #auctionBox{border-bottom:1px solid var(--ink-600);min-height:104px}
+  .auc{border:1px solid var(--signal-red);border-radius:var(--r-md);padding:var(--s3);
+       margin-bottom:var(--s2);background:#1E0B12}
+  .auc .s{font-size:var(--fb-lg);font-family:var(--serif)}
+  .auc .b{font-size:var(--fb-eyebrow);color:var(--paper-dim);margin-top:var(--s1);
+          letter-spacing:.06em;text-transform:uppercase}
+  .quiet{color:var(--paper-faint);font-size:var(--fb-body)}
+
+  #roster{flex:1;overflow-y:auto;padding:var(--s2) var(--s4) var(--s5)}
+  .row{display:flex;align-items:center;gap:var(--s3);padding:9px 10px;border-radius:var(--r-sm);
+       font-size:var(--fb-body);border-left:3px solid transparent}
+  .row.agent{opacity:.5}
+  .row .d{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
+  .row .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .bd{color:var(--brass-400);font-variant-numeric:tabular-nums}
+  .row.arrived{background:#0B2620;border-left-color:var(--signal-green)}
+  .row.waiting{background:#2A0F19;border-left-color:var(--signal-red)}
+
+  /* ---------- scoreboard ---------- */
+  #board{position:absolute;inset:0;background:rgba(8,7,12,.975);display:none;
+         flex-direction:column;justify-content:center;align-items:center;gap:var(--s6);padding:var(--s8)}
+  #board .eyebrow{color:var(--paper-dim)}
+  .replay{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6);width:min(1180px,92%)}
+  .replay .pane{position:relative;border:1px solid var(--ink-600);border-radius:var(--r-md);
+                background:var(--ink-800);overflow:hidden}
+  .replay canvas{display:block;width:100%;height:300px}
+  .replay .lbl{position:absolute;top:12px;left:14px;font-size:var(--fb-eyebrow);
+               letter-spacing:var(--track-label);text-transform:uppercase}
+  .replay .lbl.human{color:var(--paper)} .replay .lbl.central{color:var(--signal-green)}
+  .replay .t{position:absolute;top:12px;right:14px;font-family:var(--serif);font-size:var(--fb-lg);
+             color:var(--paper-dim);font-variant-numeric:tabular-nums}
+  .score{display:grid;grid-template-columns:auto auto;gap:var(--s5) var(--s8);align-items:baseline}
+  .score .k{font-size:var(--fb-xl);letter-spacing:var(--track-label);text-transform:uppercase}
+  .score .v{font-family:var(--serif);font-size:var(--fb-score);font-variant-numeric:tabular-nums;
+            text-align:right;line-height:.9}
+  .k.human,.v.human{color:var(--paper)}
+  .k.agent,.v.agent{color:var(--agent)}
+  .k.opt,.v.opt{color:var(--signal-green)}
+  .verdict{font-family:var(--serif);font-size:var(--fb-display);color:var(--brass-400);text-align:center}
+  #board .note{color:var(--paper-dim);font-size:var(--fb-body);max-width:680px;text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+<main>
+  <canvas id="cv"></canvas>
+  <div class="frame"></div>
+  <div class="masthead">
+    <h1>Midnight Express</h1>
+    <div class="sub"><div class="bar"></div><span>Dispatch Board · Pittsburgh Division</span></div>
+  </div>
+  <div class="clock"><b id="clk" class="num">00:00</b><span id="phase">awaiting departure</span></div>
+  <div id="chips"></div>
+  <div id="pa"></div>
+
+  <div id="board">
+    <div class="replay">
+      <div class="pane"><canvas id="rpA"></canvas><div class="lbl human">Human swarm</div><div class="t num" id="rpAt">00:00</div></div>
+      <div class="pane"><canvas id="rpB"></canvas><div class="lbl central">Central dispatcher</div><div class="t num" id="rpBt">00:00</div></div>
+    </div>
+    <div class="eyebrow">Total delay, all trains</div>
+    <div class="score">
+      <div class="k human">Everyone, self-interested</div><div class="v human num" id="sHuman">—</div>
+      <div class="k opt">One central dispatcher</div><div class="v opt num" id="sOpt">—</div>
+    </div>
+    <div class="verdict" id="verdict"></div>
+    <div class="eyebrow" id="rivalLine" style="color:var(--agent)"></div>
+    <p class="note" id="recap" style="color:var(--brass-300);font-family:var(--serif);font-size:var(--fb-lg);max-width:760px"></p>
+    <p class="note">A single dispatcher, given every train's route in advance, allocates the same
+       network in a fraction of the delay. That gap is the price of everyone acting in their own interest.</p>
+  </div>
+</main>
+
+<aside>
+  <div class="join">
+    <div class="eyebrow">Scan to board a train</div>
+    <img id="qr" src="/qr.png" alt="Scan to join">
+    <div class="u" id="joinUrl">—</div>
+  </div>
+  <div class="sec" id="auctionBox">
+    <div class="eyebrow">Contested track</div>
+    <div id="aucList"><div class="quiet">Network clear.</div></div>
+  </div>
+  <div class="sec" style="padding-bottom:0"><div class="eyebrow">Trains</div></div>
+  <div id="roster"></div>
+</aside>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const cv = $("cv"), ctx = cv.getContext("2d");
+const proto = location.protocol === "https:" ? "wss:" : "ws:";
+let net = null, state = null, tickHz = 20, flash = new Map(), ws;
+const smooth = new Map();   // trainId -> {x,y} rendered position, lerped toward target
+
+fetch("/join-url").then(r => r.json())
+  .then(d => { $("joinUrl").textContent = d.url.replace(/^https?:\/\//, ""); }).catch(()=>{});
+
+function connect() {
+  ws = new WebSocket(`${proto}//${location.host}/?role=screen`);
+  ws.onclose = () => setTimeout(connect, 1200);
+  ws.onmessage = (e) => {
+    const m = JSON.parse(e.data);
+    if (m.t === "hello")       { net = m.network; tickHz = m.tickHz || 20; resize(); }
+    if (m.t === "state")       { state = m; renderRoster(); renderAuctions(); }
+    if (m.t === "auctionOpen") { flash.set(m.auction.segment, performance.now()); }
+    if (m.t === "say")         announce(m.text);
+    if (m.t === "recap")       { const el = $("recap"); if (el) el.textContent = m.text; announce(m.text); }
+    if (m.t === "runEnd")      showBoard(m.summary);
+    if (m.t === "started")     { $("board").style.display = "none"; smooth.clear(); }
+    if (m.t === "reset")       location.reload();
+  };
+}
+connect();
+
+// ------------------------------------------------------------------ the voice
+// Rule-based lines come from the server; the browser speaks them. No API key
+// needed for this path -- Gemini only improves the phrasing and the voice.
+let paTimer = null;
+const SPEAK = new URLSearchParams(location.search).get("mute") === null;
+
+function announce(text) {
+  const pa = $("pa");
+  pa.innerHTML = `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#F0C462" stroke-width="1.6"
+      stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h4l5 4V6l-5 4H3z"/>
+      <path d="M16 8.5a4 4 0 0 1 0 7"/><path d="M18.5 6a7.5 7.5 0 0 1 0 12"/></svg>
+    <div class="txt">${text.replace(/</g, "&lt;")}</div>`;
+  pa.classList.add("on");
+  clearTimeout(paTimer);
+  paTimer = setTimeout(() => pa.classList.remove("on"), 6000);
+
+  if (!SPEAK || !window.speechSynthesis) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.04; u.pitch = 0.85; u.volume = 1;
+    const v = speechSynthesis.getVoices();
+    const pick = v.find((x) => /Daniel|Arthur|Oliver|George/i.test(x.name))
+              || v.find((x) => x.lang?.startsWith("en-GB"))
+              || v.find((x) => x.lang?.startsWith("en"));
+    if (pick) u.voice = pick;
+    speechSynthesis.speak(u);
+  } catch {}
+}
+if (window.speechSynthesis) speechSynthesis.getVoices();
+
+// ------------------------------------------------------------------ layout
+let S = 0, OX = 0, OY = 0;
+function resize() {
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (!net) return;
+  const xs = Object.values(net.nodes).map(n => n.x), ys = Object.values(net.nodes).map(n => n.y);
+  const padX = 150, padY = 190;
+  const w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys);
+  S = Math.min((cv.clientWidth - padX * 2) / w, (cv.clientHeight - padY * 2) / h);
+  OX = (cv.clientWidth  - w * S) / 2 - Math.min(...xs) * S;
+  OY = (cv.clientHeight - h * S) / 2 - Math.min(...ys) * S + 30;
+}
+addEventListener("resize", resize);
+const px = (n) => ({ x: n.x * S + OX, y: n.y * S + OY });
+
+function targetPos(t) {
+  if (t.state === "on_segment" && t.from && t.to) {
+    const A = px(net.nodes[t.from]), B = px(net.nodes[t.to]);
+    return { x: A.x + (B.x - A.x) * t.progress, y: A.y + (B.y - A.y) * t.progress };
+  }
+  return net.nodes[t.node] ? px(net.nodes[t.node]) : null;
+}
+
+// ------------------------------------------------------------------ draw
+function draw() {
+  requestAnimationFrame(draw);
+  if (!net) return;
+  if (!S) resize();
+  ctx.clearRect(0, 0, cv.clientWidth, cv.clientHeight);
+  const now = performance.now();
+  const occ = state?.segments || {};
+
+  // --- rails ---
+  for (const s of net.segments) {
+    const A = px(net.nodes[s.a]), B = px(net.nodes[s.b]);
+    const f = flash.get(s.id);
+    const hot = f && now - f < 5200;
+    const busy = occ[s.id];
+    ctx.lineCap = "round";
+
+    // sleeper bed under every rail (deco texture, cheap)
+    ctx.strokeStyle = "#15111F"; ctx.lineWidth = hot ? 16 : 11;
+    ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
+
+    if (hot) {
+      const pulse = 0.55 + 0.45 * Math.sin(now / 150);
+      ctx.strokeStyle = "#FF5470"; ctx.lineWidth = 7;
+      ctx.shadowColor = "#FF5470"; ctx.shadowBlur = 34 * pulse;
+    } else if (busy) {
+      ctx.strokeStyle = "#4B4068"; ctx.lineWidth = 5;
+    } else {
+      ctx.strokeStyle = "#211C2E"; ctx.lineWidth = 4;
+    }
+    ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // --- stations ---
+  for (const n of Object.values(net.nodes)) {
+    const P = px(n);
+    ctx.fillStyle = "#08070C"; ctx.strokeStyle = "#8A6A2C"; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(P.x, P.y, 11, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#E0A93F";
+    ctx.beginPath(); ctx.arc(P.x, P.y, 3.5, 0, 7); ctx.fill();
+
+    ctx.fillStyle = "#B0A791";
+    ctx.font = "700 15px ui-sans-serif, system-ui";
+    ctx.textAlign = "center";
+    ctx.letterSpacing = "2px";
+    ctx.fillText(n.name.toUpperCase(), P.x, P.y - 26);
+    ctx.letterSpacing = "0px";
+  }
+
+  // --- trains (lerped so slow movement still looks fluid) ---
+  for (const t of state?.trains || []) {
+    const tgt = targetPos(t); if (!tgt) continue;
+    let s = smooth.get(t.id);
+    if (!s) { s = { ...tgt }; smooth.set(t.id, s); }
+    s.x += (tgt.x - s.x) * 0.22;
+    s.y += (tgt.y - s.y) * 0.22;
+
+    const r = t.isAgent ? 8 : 13;
+    if (t.state === "waiting") {
+      ctx.strokeStyle = "#FF5470"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(s.x, s.y, r + 9 + Math.sin(now / 160) * 3, 0, 7); ctx.stroke();
+    }
+    ctx.shadowColor = t.color; ctx.shadowBlur = t.isAgent ? 8 : 22;
+    ctx.fillStyle = t.color;
+    ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, 7); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    if (t.state === "arrived") {
+      ctx.strokeStyle = "#25D9A0"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(s.x, s.y, r + 6, 0, 7); ctx.stroke();
+    }
+    if (!t.isAgent) {
+      ctx.fillStyle = "#F4EDDC";
+      ctx.font = "700 13px ui-sans-serif, system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText(t.name, s.x, s.y + r + 18);
+    }
+  }
+
+  // --- contested chips, positioned over the segment midpoint ---
+  const chips = [];
+  for (const a of state?.auctions || []) {
+    const seg = net.segments.find(s => s.id === a.segment); if (!seg) continue;
+    const A = px(net.nodes[seg.a]), B = px(net.nodes[seg.b]);
+    chips.push(`<div class="chip" style="left:${(A.x+B.x)/2}px;top:${(A.y+B.y)/2 - 44}px">
+        <b>Contested</b><i>${a.bidders.map(b=>b.name).join(" vs ")}</i></div>`);
+  }
+  const box = $("chips");
+  const html = chips.join("");
+  if (box.dataset.sig !== html) { box.dataset.sig = html; box.innerHTML = html; }
+
+  if (state) {
+    const secs = state.tick / tickHz;
+    $("clk").textContent = `${String(Math.floor(secs/60)).padStart(2,"0")}:${String(Math.floor(secs%60)).padStart(2,"0")}`;
+    $("phase").textContent = state.phase === "running" ? "en route" : state.phase;
+  }
+}
+draw();
+
+// ------------------------------------------------------------------ panels
+function renderRoster() {
+  const el = $("roster");
+  const html = (state.trains || []).map(t => `
+    <div class="row ${t.isAgent?"agent":""} ${t.state==="arrived"?"arrived":""} ${t.state==="waiting"?"waiting":""}">
+      <div class="d" style="background:${t.color}"></div>
+      <div class="nm">${t.name}</div>
+      <div class="bd">${t.budget}</div>
+    </div>`).join("");
+  if (el.dataset.sig !== html) { el.dataset.sig = html; el.innerHTML = html; }
+}
+
+function renderAuctions() {
+  const el = $("aucList");
+  const list = state.auctions || [];
+  const html = list.length
+    ? list.map(a => `<div class="auc"><div class="s">${a.segmentName}</div>
+        <div class="b">${a.bidders.map(b=>b.name).join(" vs ")} · ${Math.ceil(a.msRemaining/1000)}s left</div></div>`).join("")
+    : '<div class="quiet">Network clear.</div>';
+  if (el.dataset.sig !== html) { el.dataset.sig = html; el.innerHTML = html; }
+}
+
+// ------------------------------------------------------------------ replay
+// Both logs are snapshots every 10 ticks. Play them side by side at 10x so the
+// room watches itself gridlock while one dispatcher glides the same trains home.
+let replayRAF = null;
+function startReplay(s) {
+  cancelAnimationFrame(replayRAF);
+  const colorByName = Object.fromEntries((s.trains || []).map((t) => [t.name, t.color]));
+  const nameA = Object.fromEntries((s.trains || []).map((t) => [t.id, t.name]));
+  const nameB = Object.fromEntries((s.baselineTrains || []).map((t) => [t.id, t.name]));
+  const logA = s.log || [], logB = s.baselineLog || [];
+  if (!logA.length) return;
+
+  const panes = [["rpA", "rpAt", logA, nameA], ["rpB", "rpBt", logB, nameB]].map(([cid, tid, log, names]) => {
+    const c = $(cid), g = c.getContext("2d");
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    c.width = c.clientWidth * dpr; c.height = c.clientHeight * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const xs = Object.values(net.nodes).map(n => n.x), ys = Object.values(net.nodes).map(n => n.y);
+    const w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys);
+    const sc = Math.min((c.clientWidth - 60) / w, (c.clientHeight - 70) / h);
+    const ox = (c.clientWidth - w * sc) / 2 - Math.min(...xs) * sc;
+    const oy = (c.clientHeight - h * sc) / 2 - Math.min(...ys) * sc + 14;
+    return { g, c, log, names, P: (n) => ({ x: n.x * sc + ox, y: n.y * sc + oy }), tEl: $(tid) };
+  });
+
+  const maxTick = Math.max(logA.at(-1)?.tick || 0, logB.at(-1)?.tick || 0);
+  const SPEED = 10, t0 = performance.now();
+
+  function frame(now) {
+    const tick = Math.min(maxTick, ((now - t0) / 1000) * tickHz * SPEED);
+    for (const p of panes) {
+      const { g, c, log, names, P } = p;
+      g.clearRect(0, 0, c.clientWidth, c.clientHeight);
+      g.lineCap = "round";
+      for (const seg of net.segments) {
+        const A = P(net.nodes[seg.a]), B = P(net.nodes[seg.b]);
+        g.strokeStyle = "#211C2E"; g.lineWidth = 2.5;
+        g.beginPath(); g.moveTo(A.x, A.y); g.lineTo(B.x, B.y); g.stroke();
+      }
+      for (const n of Object.values(net.nodes)) {
+        const Q = P(n); g.fillStyle = "#8A6A2C";
+        g.beginPath(); g.arc(Q.x, Q.y, 3, 0, 7); g.fill();
+      }
+      let snap = log[0];
+      for (const e of log) { if (e.tick <= tick) snap = e; else break; }
+      for (const t of snap?.trains || []) {
+        let Q;
+        if (t.seg && t.state === "on_segment") {
+          const seg = net.segments.find(x => x.id === t.seg); if (!seg) continue;
+          // direction: the node we are NOT at is where we are heading
+          const from = net.nodes[t.node], to = net.nodes[seg.a === t.node ? seg.b : seg.a];
+          const A = P(from), B = P(to);
+          Q = { x: A.x + (B.x - A.x) * t.progress, y: A.y + (B.y - A.y) * t.progress };
+        } else if (net.nodes[t.node]) Q = P(net.nodes[t.node]); else continue;
+        const col = colorByName[names[t.id]] || "#F4EDDC";
+        if (t.state === "waiting") { g.strokeStyle = "#FF5470"; g.lineWidth = 1.5;
+          g.beginPath(); g.arc(Q.x, Q.y, 9, 0, 7); g.stroke(); }
+        g.fillStyle = col; g.globalAlpha = t.state === "arrived" ? .35 : 1;
+        g.beginPath(); g.arc(Q.x, Q.y, 5.5, 0, 7); g.fill(); g.globalAlpha = 1;
+      }
+      const shown = Math.min(tick, log.at(-1)?.tick || 0) / tickHz;
+      p.tEl.textContent = `${String(Math.floor(shown/60)).padStart(2,"0")}:${String(Math.floor(shown%60)).padStart(2,"0")}`;
+    }
+    if (tick < maxTick) replayRAF = requestAnimationFrame(frame);
+  }
+  replayRAF = requestAnimationFrame(frame);
+}
+
+function showBoard(s) {
+  // Like for like: every train in this run vs every train under one dispatcher.
+  const total = (s.scoreboard.totalDelay ?? 0) / tickHz;
+  const o = s.baselineDelay != null ? s.baselineDelay / tickHz : null;
+  $("sHuman").textContent = total.toFixed(0) + "s";
+  $("sOpt").textContent   = o != null ? o.toFixed(0) + "s" : "—";
+  $("verdict").textContent = (o && o > 0)
+    ? (total / o >= 1.15 ? `${(total / o).toFixed(1)}× the delay of one dispatcher.` : "You matched a central dispatcher.")
+    : "";
+  // The other story: did the AI beat the humans?
+  const rl = $("rivalLine");
+  if (s.rival && s.scoreboard.humanMeanDelay) {
+    const rv = s.rival.delayTicks / tickHz, hm = s.scoreboard.humanMeanDelay / tickHz;
+    rl.textContent = `${s.rival.name} · ${rv.toFixed(0)}s delay   —   average human · ${hm.toFixed(0)}s`;
+  } else rl.textContent = "";
+  $("board").style.display = "flex";
+  requestAnimationFrame(() => startReplay(s));   // after layout, so canvases have size
+}
+</script>
+</body>
+</html>

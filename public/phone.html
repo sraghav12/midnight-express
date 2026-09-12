@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#08070C">
+<title>Midnight Express</title>
+<link rel="stylesheet" href="/tokens.css">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overscroll-behavior:none}
+  body{
+    background:radial-gradient(130% 75% at 50% -5%,#1A1428 0%,var(--ink-900) 58%);
+    color:var(--paper);font-family:var(--sans);font-size:var(--fp-body);
+    display:flex;flex-direction:column;height:100dvh;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)
+  }
+  .wrap{flex:1;display:flex;flex-direction:column;min-height:0}
+  .hide{display:none!important}
+
+  /* ---------------- join ---------------- */
+  #join{flex:1;display:flex;flex-direction:column;justify-content:center;gap:var(--s5);padding:var(--s6) var(--s5)}
+  #join h1{
+    margin:0;font-family:var(--serif);font-size:var(--fp-display);
+    letter-spacing:.24em;text-transform:uppercase;color:var(--brass-400);line-height:1.25
+  }
+  #join .tag{margin:0;color:var(--paper-dim);font-size:var(--fp-lg);line-height:1.5}
+  #join .tag b{color:var(--paper);display:block;margin-top:var(--s1)}
+  input[type=text]{
+    width:100%;min-height:var(--touch-min);padding:0 var(--s4);border-radius:var(--r-md);
+    border:1px solid var(--ink-600);background:var(--ink-700);color:var(--paper);
+    font-size:var(--fp-lg);font-family:var(--sans)
+  }
+
+  /* ---------------- header ---------------- */
+  header{padding:var(--s3) var(--s4);border-bottom:1px solid var(--ink-600);
+         display:flex;align-items:center;gap:var(--s3)}
+  .dot{width:14px;height:14px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 14px currentColor}
+  .route{flex:1;min-width:0}
+  .route b{display:block;font-size:var(--fp-lg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .budget{text-align:right;flex:0 0 auto}
+  .budget b{display:block;font-family:var(--serif);font-size:var(--fp-xl);
+            color:var(--brass-400);font-variant-numeric:tabular-nums;line-height:1}
+
+  /* ---------------- status ---------------- */
+  #status{padding:var(--s5) var(--s4) var(--s3);text-align:center}
+  #where{font-family:var(--serif);font-size:var(--fp-xl);margin-top:var(--s2);letter-spacing:var(--track-tight)}
+  #progWrap{height:4px;background:var(--ink-600);border-radius:2px;margin-top:var(--s4);overflow:hidden}
+  #prog{height:100%;width:0;background:var(--brass-500);transition:width .18s linear}
+
+  /* ---------------- steering ---------------- */
+  #steerWrap{flex:1;min-height:0;overflow-y:auto;padding:var(--s2) var(--s4)}
+  #steerWrap > .eyebrow{margin:var(--s4) 2px var(--s3)}
+  .choice{
+    width:100%;min-height:var(--touch-min);display:flex;align-items:center;gap:var(--s3);
+    padding:0 var(--s4);margin-bottom:10px;border-radius:var(--r-md);
+    border:1px solid var(--ink-600);background:var(--ink-700);color:var(--paper);
+    text-align:left;font-family:var(--sans)
+  }
+  .choice.rec{border-color:var(--brass-500);background:#1F1830}
+  .choice.sel{border-color:var(--signal-green);background:#0C2620}
+  .choice .n{flex:1;font-size:var(--fp-lg)}
+  .choice .tag{font-size:var(--fp-eyebrow);letter-spacing:var(--track-label);
+               text-transform:uppercase;color:var(--brass-400)}
+  .choice .occ{font-size:var(--fp-eyebrow);letter-spacing:var(--track-label);
+               text-transform:uppercase;color:var(--signal-red)}
+
+  /* ---------------- throttle ---------------- */
+  #throttleWrap{padding:var(--s3) var(--s4) var(--s4);border-top:1px solid var(--ink-600)}
+  #throttle{
+    width:100%;height:84px;border-radius:var(--r-lg);border:1px solid var(--brass-700);
+    background:linear-gradient(#26200F,#181309);color:var(--brass-400);
+    font-size:var(--fp-body);letter-spacing:var(--track-label);text-transform:uppercase;
+    font-weight:700;touch-action:none;font-family:var(--sans)
+  }
+  #throttle.on{background:linear-gradient(#3E3014,#2C2210);color:var(--brass-300);border-color:var(--brass-500)}
+
+  /* ---------------- auction ---------------- */
+  #auction{
+    position:fixed;inset:0;z-index:50;padding:var(--s6) var(--s5);
+    display:flex;flex-direction:column;justify-content:center;gap:var(--s4);
+    background:radial-gradient(120% 70% at 50% 0%,#3A0E1E 0%,#0B060A 62%);
+    animation:slam .3s cubic-bezier(.2,1.4,.4,1)
+  }
+  @keyframes slam{from{opacity:0;transform:scale(1.06)}to{opacity:1;transform:none}}
+  #auction .eyebrow{color:var(--signal-red);font-size:var(--fp-micro)}
+  #segName{margin:0;font-family:var(--serif);font-size:var(--fp-display);line-height:1.15}
+  #timer{height:7px;border-radius:4px;background:#3A2430;overflow:hidden}
+  #timerFill{height:100%;width:100%;background:var(--signal-red)}
+  #bidVal{font-family:var(--serif);font-size:var(--fp-bid);color:var(--brass-400);
+          font-variant-numeric:tabular-nums;text-align:center;line-height:1}
+  input[type=range]{width:100%;height:52px;accent-color:var(--brass-500)}
+  .quick{display:flex;gap:var(--s2)}
+  .quick button{
+    flex:1;min-height:52px;border-radius:var(--r-md);border:1px solid var(--ink-600);
+    background:var(--ink-700);color:var(--paper);font-size:var(--fp-body);font-family:var(--sans)
+  }
+  .quick button:active{border-color:var(--brass-500)}
+  .rivals{font-size:var(--fp-micro);color:var(--paper-dim);text-align:center;min-height:18px}
+
+  /* ---------------- end ---------------- */
+  #end{flex:1;display:flex;flex-direction:column;justify-content:center;gap:var(--s4);
+       padding:var(--s6) var(--s5);text-align:center}
+  #end h2{margin:0;font-family:var(--serif);font-size:var(--fp-display);
+          color:var(--brass-400);letter-spacing:var(--track-display)}
+  .stat{display:flex;justify-content:space-between;align-items:baseline;
+        padding:var(--s3) 0;border-bottom:1px solid var(--ink-600);font-size:var(--fp-body)}
+  .stat span{color:var(--paper-dim)}
+  .stat b{font-family:var(--serif);font-size:var(--fp-lg);font-variant-numeric:tabular-nums}
+  a.explorer{
+    display:flex;align-items:center;justify-content:center;min-height:var(--touch-min);
+    border-radius:var(--r-md);background:#0E2A3A;border:1px solid #1D7FA8;
+    color:#8EDBFF;text-decoration:none;font-size:var(--fp-body);padding:var(--s3)
+  }
+  .toast{
+    position:fixed;left:50%;transform:translateX(-50%);
+    bottom:calc(20px + env(safe-area-inset-bottom));
+    background:var(--ink-700);border:1px solid var(--brass-700);color:var(--paper);
+    padding:12px 20px;border-radius:var(--r-pill);font-size:var(--fp-body);
+    z-index:60;opacity:0;transition:opacity .2s;pointer-events:none
+  }
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section id="join">
+    <h1>Midnight<br>Express</h1>
+    <p class="tag">Forty trains. One network.<b>Not enough track.</b></p>
+    <input id="name" type="text" placeholder="Your name" autocomplete="off" maxlength="16" enterkeyhint="go">
+    <button class="btn" id="joinBtn">Board the train</button>
+    <button class="btn btn--ghost" id="spectate">Just watching</button>
+  </section>
+
+  <section id="game" class="wrap hide">
+    <header>
+      <div class="dot" id="dot"></div>
+      <div class="route"><b id="routeTxt">—</b><span class="eyebrow">Your route</span></div>
+      <div class="budget"><b id="budgetTxt" class="num">100</b><span class="eyebrow">Tokens</span></div>
+    </header>
+    <div id="status">
+      <div class="eyebrow" id="statusLine">waiting for departure</div>
+      <div id="where">—</div>
+      <div id="progWrap"><div id="prog"></div></div>
+    </div>
+    <div id="steerWrap">
+      <div class="eyebrow" id="choiceLbl">Choose your next track</div>
+      <div id="choices"></div>
+    </div>
+    <div id="throttleWrap"><button id="throttle">Hold to run</button></div>
+  </section>
+
+  <section id="end" class="hide">
+    <h2 id="endTitle">Arrived</h2>
+    <div>
+      <div class="stat"><span>Delay</span><b id="eDelay">—</b></div>
+      <div class="stat"><span>Auctions won / lost</span><b id="eWL">—</b></div>
+      <div class="stat"><span>Tokens spent / earned</span><b id="eTok">—</b></div>
+      <div class="stat"><span>Final balance</span><b id="eBal">—</b></div>
+    </div>
+    <a class="explorer hide" id="explorer" target="_blank" rel="noopener">View this run on Solana →</a>
+  <div id="myBids"></div>
+    <button class="btn btn--ghost" id="again">Ride again</button>
+  </section>
+</div>
+
+<div id="auction" class="hide">
+  <div class="eyebrow">Track contested</div>
+  <p id="segName">—</p>
+  <div id="timer"><div id="timerFill"></div></div>
+  <div id="bidVal">0</div>
+  <input type="range" id="bidRange" min="0" max="100" value="0" aria-label="Your bid">
+  <div class="quick">
+    <button data-pct="0">Pass</button><button data-pct="25">25%</button>
+    <button data-pct="50">50%</button><button data-pct="100">All in</button>
+  </div>
+  <div class="rivals" id="rivals"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const proto = location.protocol === "https:" ? "wss:" : "ws:";
+let ws, me = null, net = null, curAuction = null, tickHz = 20;
+const myAuctions = [];   // { auctionId, sig, explorerUrl } for auctions I was in
+
+/* iOS Safari has NO Vibration API, so the auction alert cannot rely on haptics.
+   WebAudio needs a user gesture to unlock -- the Board button provides it. */
+let actx = null;
+function unlockAudio(){ try { actx = new (window.AudioContext||window.webkitAudioContext)(); actx.resume(); } catch {} }
+function chime(freqs = [880, 1320], dur = 0.16) {
+  if (!actx) return;
+  freqs.forEach((f, i) => {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "triangle"; o.frequency.value = f;
+    const t = actx.currentTime + i * dur;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.28, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur + 0.02);
+  });
+}
+function buzz(p){ try { navigator.vibrate?.(p); } catch {} }
+function alertPlayer(){ chime([1320, 880, 1320], .14); buzz([0,80,60,80]); }
+
+function toast(msg, ms = 1900) {
+  const el = $("toast"); el.textContent = msg; el.classList.add("show");
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), ms);
+}
+function send(o){ if (ws?.readyState === 1) ws.send(JSON.stringify(o)); }
+
+function connect() {
+  ws = new WebSocket(`${proto}//${location.host}/?role=player`);
+  ws.onopen = () => toast("Connected");
+  ws.onclose = () => { toast("Reconnecting…"); setTimeout(connect, 1200); };
+  ws.onmessage = (e) => handle(JSON.parse(e.data));
+}
+connect();
+
+function handle(m) {
+  switch (m.t) {
+    case "hello":   net = m.network; tickHz = m.tickHz || 20; break;
+    case "welcome": onWelcome(m); break;
+    case "state":   onState(m); break;
+    case "auction": if (m.auction.bidders.some(b => b.trainId === me)) openAuction(m.auction); break;
+    case "settled": onSettled(m.settlement); break;
+    case "arrived": if (m.trainId === me) { chime([660,990],.2); } break;
+    case "runEnd":  onRunEnd(m.summary); break;
+    case "auctionSig": onAuctionSig(m); break;
+    case "receipt": onReceipt(m.receipt); break;
+    case "reset":   location.reload(); break;
+  }
+}
+
+$("joinBtn").onclick = () => {
+  unlockAudio();
+  send({ t: "join", name: $("name").value.trim() });
+  $("joinBtn").disabled = true; $("joinBtn").textContent = "Boarding…";
+};
+$("name").addEventListener("keydown", e => { if (e.key === "Enter") $("joinBtn").click(); });
+$("spectate").onclick = () => { unlockAudio(); $("join").classList.add("hide");
+  $("game").classList.remove("hide"); $("statusLine").textContent = "spectating"; };
+
+function onWelcome(m) {
+  me = m.trainId; net = m.network || net;
+  $("join").classList.add("hide"); $("game").classList.remove("hide");
+  $("dot").style.color = m.color; $("dot").style.background = m.color;
+  $("routeTxt").textContent = `${net.nodes[m.origin].name} → ${net.nodes[m.destination].name}`;
+  $("budgetTxt").textContent = m.budget;
+  $("bidRange").max = m.budget;
+  chime([660, 990], .18);
+  toast(`You are ${m.name}`);
+}
+
+function onState(m) {
+  if (!me) return;
+  const t = m.trains.find(x => x.id === me); if (!t) return;
+  $("budgetTxt").textContent = t.budget;
+  $("bidRange").max = Math.max(1, t.budget);
+  const nm = (k) => net.nodes[k]?.name ?? k;
+
+  if (t.state === "arrived") {
+    $("statusLine").textContent = "home"; $("where").textContent = nm(t.destination);
+    $("prog").style.width = "100%";
+  } else if (t.state === "on_segment") {
+    $("statusLine").textContent = "running";
+    $("where").textContent = `${nm(t.from)} → ${nm(t.to)}`;
+    $("prog").style.width = (t.progress * 100) + "%";
+  } else if (t.state === "waiting") {
+    $("statusLine").textContent = "held at signal";
+    $("where").textContent = nm(t.node); $("prog").style.width = "0%";
+  } else {
+    $("statusLine").textContent = "at platform";
+    $("where").textContent = nm(t.node); $("prog").style.width = "0%";
+  }
+  renderChoices(t, m);
+}
+
+function renderChoices(t, state) {
+  const box = $("choices"), lbl = $("choiceLbl");
+  if (t.state === "arrived") {
+    lbl.textContent = "Journey complete";
+    if (box.dataset.sig !== "") { box.dataset.sig = ""; box.innerHTML = ""; }
+    return;
+  }
+  // Pre-select while in transit -- otherwise an 8s leg is dead air on the phone.
+  const inTransit = t.state === "on_segment" && t.to;
+  const junction = inTransit ? t.to : t.node;
+  lbl.textContent = inTransit
+    ? `Next junction · ${net.nodes[junction].name}`
+    : "Choose your next track";
+
+  const rec = recommend(junction, t.destination);
+  const html = net.segments.filter(s => s.a === junction || s.b === junction).map(s => {
+    const to = s.a === junction ? s.b : s.a;
+    const occupied = state.segments[s.id] && state.segments[s.id] !== t.id;
+    return `<button class="choice ${to===rec?"rec":""} ${to===t.steer?"sel":""}" data-to="${to}">
+      <span class="n">${net.nodes[to].name}</span>
+      ${to===rec?'<span class="tag">Fastest</span>':""}
+      ${occupied?'<span class="occ">Occupied</span>':""}</button>`;
+  }).join("");
+  if (box.dataset.sig !== html) { box.dataset.sig = html; box.innerHTML = html; }
+}
+
+$("choices").addEventListener("click", (e) => {
+  const b = e.target.closest(".choice"); if (!b) return;
+  send({ t: "steer", toNode: b.dataset.to });
+  buzz(15); chime([990], .07);
+  [...$("choices").children].forEach(c => c.classList.remove("sel"));
+  b.classList.add("sel");
+  toast(`Routing via ${net.nodes[b.dataset.to].name}`, 1200);
+});
+
+function recommend(from, to) {
+  const adj = {};
+  for (const s of net.segments){ (adj[s.a] ||= []).push([s.b,s.length]); (adj[s.b] ||= []).push([s.a,s.length]); }
+  const dist = {[from]:0}, prev = {}, q = new Set(Object.keys(net.nodes));
+  while (q.size) {
+    let u = null;
+    for (const n of q) if (dist[n] !== undefined && (u === null || dist[n] < dist[u])) u = n;
+    if (u === null) break;
+    q.delete(u); if (u === to) break;
+    for (const [v,w] of adj[u] || []) {
+      const alt = dist[u] + w;
+      if (dist[v] === undefined || alt < dist[v]) { dist[v] = alt; prev[v] = u; }
+    }
+  }
+  if (dist[to] === undefined) return null;
+  let cur = to; const path = [to];
+  while (cur !== from) { cur = prev[cur]; path.unshift(cur); }
+  return path[1];
+}
+
+const th = $("throttle");
+let held = false;
+const setThrottle = (v) => { send({ t:"throttle", value:v });
+  th.classList.toggle("on", v > 0.5); th.textContent = v > 0.5 ? "Running" : "Hold to run"; };
+th.addEventListener("pointerdown", e => { e.preventDefault(); held = true; setThrottle(1); });
+const rel = e => { e.preventDefault?.(); held = false; setThrottle(0.35); };
+th.addEventListener("pointerup", rel);
+th.addEventListener("pointercancel", rel);
+th.addEventListener("pointerleave", e => { if (held) rel(e); });
+setTimeout(() => setThrottle(1), 400);
+
+let auctionTimer = null;
+function openAuction(a) {
+  curAuction = a;
+  $("auction").classList.remove("hide");
+  $("segName").textContent = a.segmentName;
+  const budget = Number($("budgetTxt").textContent) || 100;
+  $("bidRange").max = Math.max(1, budget);
+  $("bidRange").value = 0; $("bidVal").textContent = "0";
+  $("rivals").textContent = a.bidders.filter(b => b.trainId !== me).map(b => b.name).join(" · ") + " also want this track";
+  alertPlayer();
+
+  const total = a.msRemaining || 8000, t0 = performance.now();
+  clearInterval(auctionTimer);
+  auctionTimer = setInterval(() => {
+    const left = Math.max(0, total - (performance.now() - t0));
+    $("timerFill").style.width = (left / total * 100) + "%";
+    if (left <= 0) { clearInterval(auctionTimer); closeAuction(); }
+  }, 50);
+}
+function closeAuction(){ $("auction").classList.add("hide"); curAuction = null; }
+
+$("bidRange").addEventListener("input", e => {
+  $("bidVal").textContent = e.target.value;
+  if (curAuction) send({ t:"bid", auctionId: curAuction.auctionId, amount:+e.target.value });
+});
+document.querySelectorAll(".quick button").forEach(b => b.onclick = () => {
+  const amt = Math.floor((+$("bidRange").max) * (+b.dataset.pct) / 100);
+  $("bidRange").value = amt; $("bidVal").textContent = amt;
+  if (curAuction) send({ t:"bid", auctionId: curAuction.auctionId, amount: amt });
+  buzz(20); chime([1180], .06);
+});
+
+function onSettled(s) {
+  if (curAuction && s.auctionId === curAuction.auctionId) closeAuction();
+  if (s.winner === me) { toast(`Track won — paid ${s.pricePaid}`); chime([880,1320],.13); }
+  else if (s.compensation && s.compensation[me] !== undefined) {
+    toast(`Held. Compensated ${s.compensation[me]}`); chime([440],.2); }
+}
+
+function onRunEnd(summary) {
+  const t = summary.trains.find(x => x.id === me);
+  $("game").classList.add("hide"); $("auction").classList.add("hide"); $("end").classList.remove("hide");
+  if (!t) { $("endTitle").textContent = "Run complete"; return; }
+  $("endTitle").textContent = t.arrived ? "Arrived" : "Stranded";
+  $("eDelay").textContent = `${(t.delayTicks / tickHz).toFixed(1)}s`;
+  $("eWL").textContent = `${t.auctionsWon} / ${t.auctionsLost}`;
+  $("eTok").textContent = `${t.spent} / ${t.earned}`;
+  $("eBal").textContent = t.budget;
+  renderMyBids();
+}
+function onAuctionSig(m) {
+  if (!m.explorerUrl) return;
+  if (myAuctions.some((x) => x.auctionId === m.auctionId)) return;
+  myAuctions.push({ auctionId: m.auctionId, sig: m.sig, explorerUrl: m.explorerUrl });
+  renderMyBids();
+}
+
+/** The closing beat: the judge taps this and sees the auction they just bid in. */
+function renderMyBids() {
+  const box = $("myBids"); if (!box) return;
+  if (!myAuctions.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="eyebrow" style="margin:var(--s4) 0 var(--s2)">Your bids on-chain</div>` +
+    myAuctions.map((a, i) => `<a class="explorer" style="margin-bottom:8px;font-size:var(--fp-micro)"
+        href="${a.explorerUrl}" target="_blank" rel="noopener">Auction ${i + 1} · ${a.sig.slice(0, 10)}… →</a>`).join("");
+}
+
+function onReceipt(r) {
+  if (!r?.explorerUrl) return;
+  const a = $("explorer"); a.href = r.explorerUrl; a.classList.remove("hide");
+}
+$("again").onclick = () => location.reload();
+</script>
+</body>
+</html>
