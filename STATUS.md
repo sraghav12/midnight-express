@@ -1,6 +1,12 @@
 # Midnight Express — status
 
-*Updated 2026-09-12, 3:55 PM. **CODE FROZEN.** Team remote. Repo: https://github.com/sraghav12/midnight-express · Live: https://155-138-204-133.sslip.io/play*
+*Updated 2026-09-12, 4:52 PM. **CODE FROZEN.** Team remote; judged by video at 5:05 PM.*
+
+**Pitch video (HyperFrames, 2:00):** `~/Desktop/CMU/Sem 3/HackCMU/midnight-express-pitch-hyperframes.mp4` —
+real footage of a live run recorded with Playwright (`scripts/pitch/record.mjs`), composed by
+`scripts/pitch/hf-build.mjs` into a HyperFrames composition (title → board + phone with captions →
+Solana Explorer close-up → end card), narration via macOS `say`, rendered by `hyperframes render`
+in 2m51s. Safe fallback cut (ffmpeg, no cards): `midnight-express-pitch.mp4`, 116 s. Repo: https://github.com/sraghav12/midnight-express · Live: https://155-138-204-133.sslip.io/play*
 
 ## Works right now, no keys, no funding
 
