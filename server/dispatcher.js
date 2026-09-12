@@ -141,9 +141,11 @@ export class Dispatcher {
       `Write TWO short sentences (under 40 words total) from these facts only, dry and a little wry. ` +
       `Sentence 1: the comparison, keeping its direction exactly (the central dispatcher was faster). ` +
       `Sentence 2: one human by name. Do not invent numbers.\n${JSON.stringify(facts)}`,
-      { maxTokens: 90, timeoutMs: 8000, temperature: 0.8, provider: RECAP_PROVIDER },
+      // Latency is free here: the board holds the scoreboard for 20s. grok-4.3 needs ~4-8s.
+      { maxTokens: 90, timeoutMs: 14000, temperature: 0.8, provider: RECAP_PROVIDER },
     ).then((out) => {
-      const line = (out || "").trim().replace(/\s+/g, " ");
+      // Grok likes **bold** and a "Report:" label; the PA does not.
+      const line = (out || "").replace(/\*\*|__|^#+\s*/g, "").replace(/^\s*(end[- ]of[- ]run\s+report[:.]?)\s*/i, "").trim().replace(/\s+/g, " ");
       if (line && line.length < 320) { this.spoken++; this.say(line, { kind: "recap" }); }
     }).catch(() => {});
   }

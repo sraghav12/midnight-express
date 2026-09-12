@@ -55,8 +55,8 @@ function joinURL(reqHost) {
   return `http://${host}/play`;
 }
 
-const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css",
-               ".json": "application/json", ".png": "image/png", ".svg": "image/svg+xml" };
+const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json",
+               ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml" };
 
 // ------------------------------------------------------------------ http
 const server = http.createServer((req, res) => {

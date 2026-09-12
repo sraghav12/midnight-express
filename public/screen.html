@@ -10,7 +10,13 @@
   html,body{margin:0;height:100%;background:var(--ink-900);color:var(--paper);overflow:hidden}
   body{font-family:var(--sans);display:grid;grid-template-columns:1fr 380px;height:100vh}
 
-  main{position:relative;min-width:0}
+  main{position:relative;min-width:0;isolation:isolate}
+  /* Grok Imagine hero art, kept dim so the rails and labels stay legible at 3m.
+     If public/art/hero.jpg is absent the layer is simply empty. */
+  main::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+    background:url("/art/hero.jpg") center/cover no-repeat;opacity:.16;
+    -webkit-mask-image:radial-gradient(90% 80% at 50% 45%,#000 40%,transparent 100%);
+            mask-image:radial-gradient(90% 80% at 50% 45%,#000 40%,transparent 100%)}
   canvas{display:block;width:100%;height:100%}
 
   /* ---------- deco frame ---------- */
