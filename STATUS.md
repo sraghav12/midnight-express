@@ -1,6 +1,6 @@
 # Midnight Express — status
 
-*Updated 2026-09-12, 3:30 PM. **Form due 4:00 PM.** Repo: https://github.com/sraghav12/midnight-express · Live: https://155-138-204-133.sslip.io/play*
+*Updated 2026-09-12, 3:55 PM. **CODE FROZEN.** Team remote. Repo: https://github.com/sraghav12/midnight-express · Live: https://155-138-204-133.sslip.io/play*
 
 ## Works right now, no keys, no funding
 
@@ -143,9 +143,10 @@ Each of these would only have shown up in front of a judge:
    more than this to the IFM judges.
 13. **Run receipt too large for Solana.** With 8 co-signers and a 12-train crew JSON the receipt
     hit `Transaction too large: 1270 > 1232` — the closing "View this run on Solana" link never
-    appeared while every per-auction link did. Now: up to 4 human co-signers, and if still over
-    the cap, a treasury-only receipt. Also one retry on a failed auction write (1 of 8 failed at
-    simulation in the same run).
+    appeared while every per-auction link did. Measured: 8 co-signers = exactly 1232 bytes with a
+    286-byte memo. Now: up to 4 human co-signers (844 bytes), treasury-only fallback (456). Plus one
+    retry on a failed auction write. **Verified live 3:55 PM: receipt on board and phone, 8/8 writes.**
+    https://explorer.solana.com/tx/3z65SAMLTuTxA4q9EdynpKMvBe8ChizQwBvAyPZDdXF7ft8ac3mmzk29vPEKJsgim8SCYy8v69xmXaogZtnxqasy?cluster=devnet
 12. **The `.env` move took the chain down.** The template line `TREASURY_SECRET_KEY=   # base58…`
     (empty value + comment) was loaded as the literal string `# base58…`; the memo adapter
     `JSON.parse`d it and disabled itself. Loader now treats comment-only values as empty, and a
