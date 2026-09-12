@@ -51,9 +51,20 @@ lines.push({ c: 120 - END + 0.3, text: "Three models, each doing one job it is g
 const TTS_MODEL = process.env.TTS_MODEL || "gemini-3.1-flash-tts-preview";
 const VOICE = process.env.TTS_VOICE || "Charon";
 const STYLE = "Read this as a calm, dry, slightly wry 1920s railway dispatcher over a station P.A. Measured pace, no theatrics: ";
+const TTS_MODELS = [TTS_MODEL, "gemini-2.5-flash-preview-tts", "gemini-2.5-pro-preview-tts"].filter((m, i, a) => a.indexOf(m) === i);
 async function tts(text, mp3) {
+  let last;
+  for (const model of TTS_MODELS) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try { await ttsOnce(model, text, mp3); if (model !== TTS_MODEL) console.log(`  (voice via ${model} — primary quota exhausted)`); return; }
+      catch (e) { last = e; if (!/quota|429|RESOURCE_EXHAUSTED/i.test(e.message)) break; await new Promise(r => setTimeout(r, 20000)); }
+    }
+  }
+  throw last;
+}
+async function ttsOnce(model, text, mp3) {
   const key = process.env.GEMINI_API_KEY; if (!key) throw new Error("no GEMINI_API_KEY");
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent?key=${key}`, { method: "POST", headers: { "content-type": "application/json" },
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, { method: "POST", headers: { "content-type": "application/json" },
     body: JSON.stringify({ contents: [{ parts: [{ text: STYLE + text }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICE } } } } }),
     signal: AbortSignal.timeout(90000) });
   const j = await r.json(); const part = j.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
@@ -74,9 +85,12 @@ async function elevenlabs(text, mp3) {
   fs.writeFileSync(mp3, Buffer.from(await r.arrayBuffer()));
 }
 const used = { elevenlabs: 0, gemini: 0, say: 0 };
+const sampleRate = (f) => { try { return +sh(`ffprobe -v error -select_streams a:0 -show_entries stream=sample_rate -of csv=p=0 "${f}"`).trim(); } catch { return 0; } };
 for (const [i, l] of lines.entries()) {
   const mp3 = path.join(A, `n${i}.mp3`);
   let done = false;
+  // Gemini TTS output is 24 kHz; macOS say is 22.05 kHz. Keep what Gemini already voiced.
+  if (fs.existsSync(mp3) && sampleRate(mp3) === 24000) { used.gemini++; done = true; }
   if (NARRATOR === "elevenlabs") { try { await elevenlabs(l.text, mp3); used.elevenlabs++; done = true; } catch (e) { console.log(`  line ${i}: ElevenLabs failed (${e.message.slice(0,50)}) -> Gemini`); } }
   if (!done && NARRATOR !== "say") { try { await tts(l.text, mp3); used.gemini++; done = true; } catch (e) { console.log(`  line ${i}: Gemini TTS failed (${e.message.slice(0,50)}) -> say`); } }
   if (!done) { const aiff = path.join(SCR, `hf-n${i}.aiff`); sh(`say -v Daniel -r 180 -o "${aiff}" ${JSON.stringify(l.text)}`); sh(`ffmpeg -y -v error -i "${aiff}" -codec:a libmp3lame -q:a 3 "${mp3}"`); used.say++; }

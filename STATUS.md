@@ -151,6 +151,11 @@ Each of these would only have shown up in front of a judge:
    rival" was 100% heuristic. With reasoning on it picks the right route 4/4 in ~2s. Now: one
    reasoning call per junction, never overlapping; the count is on `/health`. Do not claim
    more than this to the IFM judges.
+16. **Gemini TTS quota ran out mid-build.** Four voice A/B clips plus a test line spent the free-tier
+    TTS quota; the v2 build then voiced 7 lines in Charon and silently fell back to `say` for the last 2
+    — a robot voice appearing at the video's close. Now: the composer keeps lines Gemini already voiced
+    (24 kHz vs `say`'s 22.05 kHz), rotates across the three TTS models (separate quota buckets) and backs
+    off once on 429/quota. Lesson: A/B against a metered quota *after* you know how many lines you need.
 15. **v2 video narrated by the wrong voice.** The HyperFrames composer never imported `server/env.js`,
     so `GEMINI_API_KEY` was invisible to it and all nine narration lines silently fell back to macOS `say`
     — the exact voice the v2 existed to replace. Caught by reading the build log, not by listening. Fix:
