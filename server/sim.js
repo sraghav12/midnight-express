@@ -107,6 +107,8 @@ export class Run {
     return t.state === "on_segment" && t.to ? t.to : t.node;
   }
 
+  /** Record the player's choice for the next junction. Accepted while held in an
+   *  auction too -- it simply takes effect once the auction settles. */
   setSteer(trainId, toNode) {
     const t = this.trains.get(trainId);
     if (!t || t.state === "arrived") return false;
@@ -181,13 +183,17 @@ export class Run {
   dispatchWaiting() {
     const requests = {};   // segId -> [trainId]
     for (const t of this.trains.values()) {
-      if (t.state !== "at_node" && t.state !== "waiting") continue;
+      // A bidder is locked into its auction until it settles: it accrues delay but
+      // may not claim another segment meanwhile. Before this guard, steering away
+      // mid-auction put the train onto a second segment; settlement then overwrote
+      // t.seg and the first segment stayed "occupied" by a ghost for the whole run.
+      if (t.state === "waiting") { t.delayTicks++; continue; }
+      if (t.state !== "at_node") continue;
       const next = this.desiredNext(t);
       if (!next) continue;
       const sid = segId(t.node, next);
       if (this.auctionFor(sid)) { t.delayTicks++; continue; }  // already contested
       (requests[sid] ||= []).push(t.id);
-      t.pendingNext = next;
     }
 
     for (const [sid, ids] of Object.entries(requests)) {
@@ -204,6 +210,9 @@ export class Run {
 
   enterSegment(t, sid) {
     const seg = SEGMENTS[sid];
+    // A train can hold at most one segment. Release anything it still holds first,
+    // so occupancy can never drift out of sync with where the trains actually are.
+    if (t.seg && this.occupancy[t.seg] === t.id) this.occupancy[t.seg] = null;
     this.occupancy[sid] = t.id;
     t.state = "on_segment";
     t.seg = sid;
@@ -222,9 +231,12 @@ export class Run {
     // tie instantly by global priority -- no 3s auction window, no delay for the
     // negotiation itself. This is what the room is measured against.
     if (this.policy === "central") {
+      // Most-delayed first; ties keep boarding order (sort is stable). Never tie-break
+      // on id strings: base-36 ids compare out of creation order once the global
+      // counter passes 36, which made two identical replays disagree.
       const ranked = trainIds
         .map((id) => this.trains.get(id))
-        .sort((a, b) => (b.delayTicks - a.delayTicks) || (a.id < b.id ? -1 : 1));
+        .sort((a, b) => b.delayTicks - a.delayTicks);
       this.enterSegment(ranked[0], sid);
       for (const t of ranked.slice(1)) { t.state = "at_node"; t.delayTicks++; }
       return;
