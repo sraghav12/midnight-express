@@ -2,11 +2,22 @@
   "name": "midnight-express",
   "version": "0.1.0",
   "private": true,
+  "description": "Room-scale multiplayer rail game where contested track is allocated by live second-price auctions, with an LLM-routed rival train, a centralized-dispatcher baseline and optional Solana settlement.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sraghav12/midnight-express.git"
+  },
+  "homepage": "https://github.com/sraghav12/midnight-express#readme",
   "type": "module",
-  "description": "Forty trains. One network. Not enough track. HackCMU 2026.",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "bench": "node scripts/bench.js",
     "loadtest": "node scripts/loadtest.js"
   },
   "dependencies": {
@@ -14,12 +25,5 @@
     "@solana/web3.js": "^1.99.0",
     "qrcode": "^1.5.4",
     "ws": "^8.18.0"
-  },
-  "engines": {
-    "node": ">=22"
-  },
-  "devDependencies": {
-    "hyperframes": "^0.8.36",
-    "playwright": "^1.63.0"
   }
 }

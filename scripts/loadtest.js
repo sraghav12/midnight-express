@@ -4,7 +4,7 @@
 import WebSocket from "ws";
 
 const N = Number(process.argv[2] || 10);
-const BASE = process.argv[3] || "ws://localhost:8099";
+const BASE = process.argv[3] || `ws://localhost:${process.env.PORT || 8080}`;
 
 const stats = { joined: 0, auctions: 0, bids: 0, settled: 0, arrived: 0, errors: 0, states: 0 };
 const latencies = [];
