@@ -3,8 +3,6 @@
 **Direction:** art-deco departure board. Brass on deep ink, 1920s night train.
 Tokens live in `public/tokens.css`; both surfaces import it.
 
-> Built from first principles — the octo BM25 design databases are not installed on this
-> machine (`~/.claude-octopus/plugin/vendors/` missing), so this is the documented fallback.
 
 ## Two viewing distances, two type scales
 
