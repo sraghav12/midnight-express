@@ -1,0 +1,11 @@
+{
+  "name": "midnight-express-pitch-tools",
+  "private": true,
+  "type": "module",
+  "description": "Pitch-video pipeline used at HackCMU 2026: Playwright recorder, HyperFrames composer, screenshot capture. Not needed to run the game.",
+  "dependencies": {
+    "hyperframes": "^0.8.36",
+    "playwright": "^1.63.0",
+    "ws": "^8.18.0"
+  }
+}

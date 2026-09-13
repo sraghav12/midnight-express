@@ -1,4 +1,5 @@
 *.log
+.DS_Store
 .anchor/
 .env
 .public-url
@@ -9,3 +10,4 @@ node_modules/
 public/art/
 target/
 test-ledger/
+tools/pitch/node_modules/
