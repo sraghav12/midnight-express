@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # PRE-FLIGHT. Run at 1 PM (freeze) and again 15 minutes before judging.
-#   ./scripts/preflight.sh [hostname]
+#   ./scripts/preflight.sh <public-hostname>
 # Every line is PASS or FAIL. Anything FAIL: fix it or run ./scripts/vultr-go.sh again.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
-HOST="${1:-155-138-204-133.sslip.io}"
+HOST="${1:?usage: preflight.sh <public-hostname>}"
 TREASURY="48sFG5ydaaEpME7bdfyAUGw6Aj6KqVyyEf4CuGY5ngaD"
 ok(){ printf "  PASS  %s\n" "$1"; } ; bad(){ printf "  FAIL  %s\n" "$1"; FAILS=$((FAILS+1)); }
 FAILS=0
@@ -56,5 +56,5 @@ caff=$(pgrep -x caffeinate >/dev/null && echo yes || echo no)
 [ "$caff" = yes ] && ok "sleep prevented (caffeinate running)" || bad "laptop may sleep -> tunnel dies. Run:  caffeinate -dims &"
 
 echo
-[ "$FAILS" -eq 0 ] && echo "  ALL CLEAR — go." || echo "  $FAILS FAIL(s) above. Fix, or re-run: ./scripts/vultr-go.sh 155.138.204.133"
+[ "$FAILS" -eq 0 ] && echo "  ALL CLEAR — go." || echo "  $FAILS FAIL(s) above. Fix, or re-run: ./scripts/vultr-go.sh <ip>"
 exit $FAILS
