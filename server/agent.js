@@ -1,17 +1,18 @@
 /**
- * LANE C — the rival train.
+ * The rival train: an AI player, not a narrator.
  *
- * Design rule: this must be a GOOD player with no API key at all, and a
- * distinctly better one with a Grok key. A demo that depends on a key working
- * at 4pm is a demo that can fail at 4pm.
+ * Design rule: it must be a GOOD player with no model at all, and a distinctly
+ * better one with a model. A demo that depends on an API being up is a demo
+ * that can fail at the worst moment.
  *
- *   no key  -> congestion-aware heuristic (routes around busy track, bids its
- *              true value like a rational Vickrey bidder)
- *   key     -> grok-4.6 tool-calling picks the route and the bid, with the
- *              heuristic as the fallback on any error or timeout
+ *   no model -> congestion-aware heuristic (routes around busy track, bids its
+ *               true value like a rational Vickrey bidder)
+ *   model    -> the LLM picks the route at each junction (and, opt-in, nudges the
+ *               bid within a guard band), with the heuristic as the fallback on
+ *               any error, timeout or unparseable answer
  *
  * Either way it plays through exactly the same two actions a phone has:
- * setSteer and placeBid. It is a player, not a narrator.
+ * setSteer and placeBid.
  */
 import { ADJ, SEGMENTS, NODES, shortestPath, segId } from "./network.js";
 import { complete, providerSync } from "./llm.js";
@@ -65,7 +66,7 @@ export function heuristicSteer(run, train) {
 // It is not a constant all-in: urgency scales with how much journey is left.
 const AGGRO = Number(process.env.AGENT_AGGRO || 3.0);
 
-export function heuristicBid(run, train, auction) {
+export function heuristicBid(run, train, auction, aggro = AGGRO) {
   const junction = run.junctionNode(train);
   const seg = SEGMENTS[auction.segmentId];
   if (!seg) return 0;
@@ -77,11 +78,37 @@ export function heuristicBid(run, train, auction) {
   const remaining = routeCost(run, junction, train.destination) || waitTicks;
 
   const urgency = waitTicks / (waitTicks + remaining);
-  const bid = train.budget * urgency * AGGRO;
+  const bid = train.budget * urgency * aggro;
   return Math.max(0, Math.min(train.budget, Math.round(bid)));
 }
 
 // ---------------------------------------------------------------------------
+// Parsing what a small model actually says. Both are pure so they can be tested
+// against real transcripts: reasoning prose, prompt echoes, empty cut-offs.
+
+/**
+ * The LAST valid station code in the answer. Reasoning models think out loud
+ * first and are told to end with the code, so the last one is the decision.
+ * Returns null when nothing valid is there (empty cut-off, pure prose, echo of
+ * options we did not offer).
+ */
+export function parseSteerChoice(out, valid) {
+  const codes = [...String(out ?? "").toUpperCase().matchAll(/\b([A-Z]{3})\b/g)]
+    .map((m) => m[1]).filter((c) => valid.includes(c));
+  return codes.at(-1) ?? null;
+}
+
+/**
+ * Accept a model's bid only inside a band around the heuristic's true value:
+ * [0.6x, 1.5x + 2], capped at the budget. The model may move the bid, it cannot
+ * abandon it -- a 0.9B model asked for "an integer" will sometimes say 0 and
+ * hand the track away. Returns null when the answer is missing or out of band.
+ */
+export function parseBidInBand(out, fallback, budget) {
+  const n = parseInt((String(out ?? "").match(/\d+/g) || []).at(-1), 10);
+  const lo = Math.floor(fallback * 0.6), hi = Math.min(budget, Math.ceil(fallback * 1.5) + 2);
+  return Number.isFinite(n) && n >= lo && n <= hi ? n : null;
+}
 
 export class AgentTrain {
   constructor({ run, trainId } = {}) {
@@ -138,8 +165,7 @@ export class AgentTrain {
       // EMPTY content, which read as "invalid" in the first live run.
       const out = await this.#ask(prompt, { maxTokens: STEER_TOKENS, timeoutMs: 9000, thinking: true });
       this.lastRaw = String(out).slice(0, 80);
-      const codes = [...String(out).toUpperCase().matchAll(/\b([A-Z]{3})\b/g)].map((m) => m[1]).filter((c) => valid.includes(c));
-      const pick = codes.at(-1);
+      const pick = parseSteerChoice(out, valid);
       if (pick) { this.llmWins++; this.lastReason = providerSync().provider; this.lastSteer = pick; return pick; }
       this.llmFails++; this.lastReason = "invalid";
     } catch { this.llmFails++; this.lastReason = "error"; }
@@ -162,9 +188,8 @@ export class AgentTrain {
         `Budget ${t.budget} tokens. Losing means waiting ~8 seconds while the winner clears the track. ` +
         `A heuristic values this segment at ${fallback}. What integer do you bid? Think briefly, then end with just the number.`,
         { maxTokens: 400, timeoutMs: 6000, thinking: true });
-      const n = parseInt((String(out).match(/\d+/g) || []).at(-1), 10);
-      const lo = Math.floor(fallback * 0.6), hi = Math.min(t.budget, Math.ceil(fallback * 1.5) + 2);
-      if (Number.isFinite(n) && n >= lo && n <= hi) { this.llmWins++; return n; }
+      const n = parseBidInBand(out, fallback, t.budget);
+      if (n !== null) { this.llmWins++; return n; }
       this.llmFails++; this.lastReason = "bid-out-of-band";
     } catch { this.llmFails++; }
     return fallback;
