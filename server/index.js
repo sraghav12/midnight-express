@@ -84,7 +84,11 @@ const server = http.createServer((req, res) => {
   let file = url === "/" ? "/screen.html" : url;
   if (url === "/play" || url === "/p") file = "/phone.html";
   if (url === "/how" || url === "/help" || url === "/rules") file = "/how.html";
-  const full = path.join(PUBLIC, path.normalize(file).replace(/^(\.\.[/\\])+/, ""));
+  try { file = decodeURIComponent(file); } catch { res.writeHead(400); return res.end("bad path"); }
+  // Static files are served from public/ only. Normalising against "/" first means
+  // any number of leading ".." collapses away, and the prefix check is the backstop.
+  const full = path.resolve(PUBLIC, "." + path.posix.normalize("/" + file));
+  if (!full.startsWith(PUBLIC + path.sep)) { res.writeHead(404); return res.end("not found"); }
   fs.readFile(full, (err, data) => {
     if (err) { res.writeHead(404); return res.end("not found"); }
     res.writeHead(200, { "content-type": MIME[path.extname(full)] || "application/octet-stream" });
@@ -146,7 +150,7 @@ function wireBrains() {
   if (!agents.length) return;
   // Name the rival after the brain actually driving it -- never a hardcoded guess.
   const p = providerSync();
-  agents[0].name = { ifm: "K2", xai: "Grok", gemini: "Gemini" }[p.provider] || "Dispatcher";
+  agents[0].name = p.rivalName || "Dispatcher";
   grok = new AgentTrain({ run, trainId: agents[0].id });
   fillerBrains = agents.slice(1).map((t) => t.id);
   console.log(`[agent] rival "${agents[0].name}" wired (${p.label}), ${fillerBrains.length} freight`);
@@ -183,7 +187,7 @@ function handleSimEvent(ev) {
   if (ev.t === "arrived") dispatcher?.onArrived(run.trains.get(ev.trainId) || {});
   if (ev.t === "runEnd") {
     let base = {};
-    try { base = centralizedBaseline(ev.summary); }
+    try { base = centralizedBaseline(ev.summary, { scarcity: run.scarcity }); }
     catch (e) { console.error("baseline failed:", e.message); }
     const rival = grok ? run.trains.get(grok.trainId) : null;
     const full = { ...ev.summary, ...base,
@@ -233,8 +237,10 @@ wss.on("connection", (ws, req) => {
       case "steer":    run.setSteer(meta.trainId, msg.toNode); break;
       case "throttle": run.setThrottle(meta.trainId, msg.value); break;
       case "bid":      run.placeBid(meta.trainId, msg.auctionId, msg.amount); break;
-      case "start":    if (run.phase === "lobby") { run.start(); wireBrains(); } break;
-      case "reset":    run = newRun(); broadcast({ t: "reset" }); break;
+      // Lifecycle controls belong to the dispatch board. Without the role check any
+      // phone could end everyone's run with one forged message.
+      case "start":    if (meta.role === "screen" && run.phase === "lobby") { run.start(); wireBrains(); } break;
+      case "reset":    if (meta.role === "screen") resetRun(); break;
       default: break;
     }
   });
