@@ -6,22 +6,53 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const envFile = path.join(here, "..", ".env");
-try {
-  if (fs.existsSync(envFile)) {
-    let loaded = 0;
-    for (const raw of fs.readFileSync(envFile, "utf8").split("\n")) {
-      const line = raw.trim();
-      if (!line || line.startsWith("#")) continue;
-      const eq = line.indexOf("="); if (eq < 1) continue;
-      const k = line.slice(0, eq).trim();
-      let v = line.slice(eq + 1).trim();
+/**
+ * Parse dotenv-style text into { KEY: value }. Rules, in order:
+ *   - blank lines and lines starting with # are skipped
+ *   - KEY=   # comment        -> empty (skipped by the loader)
+ *   - KEY=value   # comment   -> "value"
+ *   - KEY="quoted value"      -> quoted value, quotes stripped, inner # kept
+ * Pure function so it can be tested without touching process.env.
+ */
+export function parseEnvText(text) {
+  const out = {};
+  for (const raw of String(text).split("\n")) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+    const eq = line.indexOf("="); if (eq < 1) continue;
+    const k = line.slice(0, eq).trim();
+    let v = line.slice(eq + 1).trim();
+    const quoted = (v.startsWith('"') && v.endsWith('"') && v.length >= 2) || (v.startsWith("'") && v.endsWith("'") && v.length >= 2);
+    if (quoted) v = v.slice(1, -1);
+    else {
       if (v.startsWith("#")) v = "";                       // `KEY=   # comment` -> empty
       v = v.replace(/\s+#.*$/, "");                        // `KEY=value   # comment`
-      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
-      if (v !== "" && process.env[k] === undefined) { process.env[k] = v; loaded++; }
     }
-    if (loaded) console.log(`[env] loaded ${loaded} value(s) from .env`);
+    out[k] = v;
   }
-} catch (e) { console.warn(`[env] could not read .env: ${e.message}`); }
+  return out;
+}
+
+/** Apply a parsed env to `target` (default process.env). Existing keys win. Returns how many were set. */
+export function applyEnv(parsed, target = process.env) {
+  let loaded = 0;
+  for (const [k, v] of Object.entries(parsed)) {
+    if (v !== "" && target[k] === undefined) { target[k] = v; loaded++; }
+  }
+  return loaded;
+}
+
+/** Load one .env file into process.env. Missing file is not an error. */
+export function loadEnvFile(file) {
+  try {
+    if (!fs.existsSync(file)) return 0;
+    return applyEnv(parseEnvText(fs.readFileSync(file, "utf8")));
+  } catch (e) {
+    console.warn(`[env] could not read ${file}: ${e.message}`);
+    return 0;
+  }
+}
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const loaded = loadEnvFile(path.join(here, "..", ".env"));
+if (loaded) console.log(`[env] loaded ${loaded} value(s) from .env`);
