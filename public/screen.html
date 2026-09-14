@@ -3,120 +3,108 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#F3EFE6">
 <title>Midnight Express — Dispatch Board</title>
 <link rel="stylesheet" href="/tokens.css">
 <style>
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--ink-900);color:var(--paper);overflow:hidden}
-  body{font-family:var(--sans);display:grid;grid-template-columns:1fr 380px;height:100vh}
+  html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);overflow:hidden}
+  body{font-family:var(--sans);display:grid;grid-template-columns:1fr 360px;height:100vh}
 
-  main{position:relative;min-width:0;isolation:isolate}
-  /* Grok Imagine hero art, kept dim so the rails and labels stay legible at 3m.
-     If public/art/hero.jpg is absent the layer is simply empty. */
-  main::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
-    background:url("/art/hero.jpg") center/cover no-repeat;opacity:.16;
-    -webkit-mask-image:radial-gradient(90% 80% at 50% 45%,#000 40%,transparent 100%);
-            mask-image:radial-gradient(90% 80% at 50% 45%,#000 40%,transparent 100%)}
+  main{position:relative;min-width:0}
   canvas{display:block;width:100%;height:100%}
 
-  /* ---------- deco frame ---------- */
-  .frame{position:absolute;inset:18px;border:1px solid var(--ink-600);pointer-events:none}
-  .frame::before,.frame::after{content:"";position:absolute;background:var(--brass-500)}
-  .frame::before{left:-1px;top:-1px;width:90px;height:3px}
-  .frame::after{right:-1px;bottom:-1px;width:90px;height:3px}
+  /* ---------- masthead ---------- */
+  .masthead{position:absolute;top:34px;left:44px;pointer-events:none}
+  .masthead h1{margin:0;font-size:var(--fb-display);font-weight:700;line-height:1;letter-spacing:-.01em}
+  .masthead .sub{margin-top:8px;font-size:var(--fb-micro);font-weight:700;color:var(--ink-2);
+                 text-transform:uppercase;letter-spacing:.04em}
 
-  .masthead{position:absolute;top:46px;left:56px;pointer-events:none}
-  .masthead h1{
-    margin:0;font-family:var(--serif);font-size:var(--fb-display);
-    letter-spacing:.26em;text-transform:uppercase;color:var(--brass-400);line-height:1
-  }
-  .masthead .sub{margin-top:10px;display:flex;align-items:center;gap:12px}
-  .masthead .sub span{font-size:var(--fb-eyebrow);letter-spacing:var(--track-label);
-    text-transform:uppercase;color:var(--paper-faint)}
-  .masthead .bar{width:70px;height:2px;background:var(--brass-700)}
+  .clock{position:absolute;top:30px;right:44px;text-align:right;pointer-events:none}
+  .clock b{display:block;font-size:var(--fb-huge);font-weight:700;line-height:.95;letter-spacing:-.02em}
+  /* Cabin's figures are proportional; box each digit so the clock does not wobble as it ticks */
+  .num i{display:inline-block;font-style:normal;width:.64em;text-align:center}
+  .num i.c{width:.28em}
+  .clock span{display:block;margin-top:6px;font-size:var(--fb-micro);font-weight:700;color:var(--ink-2);
+              text-transform:uppercase;letter-spacing:.04em}
 
-  .clock{position:absolute;top:46px;right:56px;text-align:right;pointer-events:none}
-  .clock b{display:block;font-family:var(--serif);font-size:var(--fb-huge);
-    line-height:.9;color:var(--paper);font-variant-numeric:tabular-nums}
-  .clock span{font-size:var(--fb-eyebrow);letter-spacing:var(--track-label);
-    text-transform:uppercase;color:var(--paper-faint)}
-
-  /* floating chip over a contested segment */
+  /* a label pinned over a contested segment */
   .chip{
-    position:absolute;transform:translate(-50%,-50%);pointer-events:none;
-    background:#2A0C18;border:1px solid var(--signal-red);border-radius:var(--r-pill);
-    padding:7px 16px;white-space:nowrap;box-shadow:0 0 28px rgba(255,84,112,.45)
+    position:absolute;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;
+    background:var(--white);border:var(--line) solid var(--red);border-radius:var(--r-sm);
+    padding:5px 10px;font-size:var(--fb-micro);font-weight:700;color:var(--ink)
   }
-  #pa{position:absolute;left:56px;bottom:46px;right:56px;pointer-events:none;
-      display:flex;align-items:center;gap:14px;opacity:0;transition:opacity .25s}
+  .chip b{color:var(--red);text-transform:uppercase;letter-spacing:.04em;margin-right:8px}
+
+  /* the PA: a black signage strip along the bottom */
+  #pa{position:absolute;left:44px;bottom:36px;max-width:calc(100% - 88px);pointer-events:none;
+      display:flex;align-items:center;gap:14px;background:var(--ink);color:var(--paper);
+      padding:12px 18px 12px 14px;border-radius:var(--r-md);opacity:0;transition:opacity .2s}
   #pa.on{opacity:1}
-  #pa .ico{width:34px;height:34px;flex:0 0 auto}
-  #pa .txt{font-family:var(--serif);font-size:var(--fb-xl);color:var(--brass-300);
-           letter-spacing:var(--track-tight);text-shadow:0 2px 18px rgba(0,0,0,.9)}
-  .chip b{font-size:var(--fb-eyebrow);letter-spacing:var(--track-label);
-    text-transform:uppercase;color:var(--signal-red)}
-  .chip i{font-style:normal;color:var(--paper);font-size:var(--fb-body);margin-left:10px}
+  #pa .ico{width:26px;height:26px;flex:0 0 auto}
+  #pa .txt{font-size:var(--fb-lg);font-weight:600;line-height:1.25}
 
   /* ---------- sidebar ---------- */
-  aside{border-left:1px solid var(--ink-600);background:var(--ink-800);
-        display:flex;flex-direction:column;min-height:0}
-  .join{padding:var(--s5);text-align:center;border-bottom:1px solid var(--ink-600)}
-  .join .eyebrow{margin-bottom:var(--s3);color:var(--brass-400)}
-  .join img{width:100%;max-width:250px;border-radius:var(--r-md);display:block;margin:0 auto var(--s3);
-            border:3px solid var(--brass-500)}
-  .join .u{font-size:var(--fb-body);color:var(--brass-400);word-break:break-all;font-variant-numeric:tabular-nums}
+  aside{border-left:var(--line) solid var(--ink);background:var(--paper-2);display:flex;flex-direction:column;min-height:0}
+  .join{padding:var(--s5) var(--s5) var(--s4);text-align:center;border-bottom:var(--line) solid var(--ink)}
+  .join .eyebrow{margin-bottom:var(--s3)}
+  .join img{width:100%;max-width:230px;display:block;margin:0 auto var(--s3);
+            border:var(--line) solid var(--ink);border-radius:var(--r-md);background:var(--white)}
+  .join .u{font-size:var(--fb-body);font-weight:700;word-break:break-all}
+  .join .how{margin-top:8px;font-size:var(--fb-micro);color:var(--ink-2)}
 
   .sec{padding:var(--s4) var(--s5)}
   .sec > .eyebrow{margin-bottom:var(--s3)}
-  #auctionBox{border-bottom:1px solid var(--ink-600);min-height:104px}
-  .auc{border:1px solid var(--signal-red);border-radius:var(--r-md);padding:var(--s3);
-       margin-bottom:var(--s2);background:#1E0B12}
-  .auc .s{font-size:var(--fb-lg);font-family:var(--serif)}
-  .auc .b{font-size:var(--fb-eyebrow);color:var(--paper-dim);margin-top:var(--s1);
-          letter-spacing:.06em;text-transform:uppercase}
-  .quiet{color:var(--paper-faint);font-size:var(--fb-body)}
+  #auctionBox{border-bottom:var(--line) solid var(--ink);min-height:104px}
+  .auc{background:var(--white);border:var(--line) solid var(--red);border-radius:var(--r-md);
+       padding:var(--s3) var(--s4);margin-bottom:var(--s2)}
+  .auc .s{font-size:var(--fb-lg);font-weight:700;line-height:1.15}
+  .auc .b{font-size:var(--fb-micro);color:var(--ink-2);margin-top:var(--s1);font-weight:600}
+  .quiet{color:var(--ink-3);font-size:var(--fb-body)}
 
-  #roster{flex:1;overflow-y:auto;padding:var(--s2) var(--s4) var(--s5)}
+  #roster{flex:1;overflow-y:auto;padding:0 var(--s4) var(--s5)}
   .row{display:flex;align-items:center;gap:var(--s3);padding:9px 10px;border-radius:var(--r-sm);
-       font-size:var(--fb-body);border-left:3px solid transparent}
-  .row.agent{opacity:.5}
-  .row .d{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
-  .row .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .row .bd{color:var(--brass-400);font-variant-numeric:tabular-nums}
-  .row.arrived{background:#0B2620;border-left-color:var(--signal-green)}
-  .row.waiting{background:#2A0F19;border-left-color:var(--signal-red)}
+       font-size:var(--fb-body);border-left:4px solid transparent}
+  .row.agent{color:var(--ink-3);font-size:15px}
+  .row .d{width:14px;height:14px;border-radius:3px;flex:0 0 auto;border:1.5px solid var(--ink)}
+  .row.agent .d{border-color:transparent;width:11px;height:11px}
+  .row .nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+  .row.agent .nm{font-weight:400}
+  .row .bd{font-weight:700;font-variant-numeric:tabular-nums}
+  .row.arrived{border-left-color:var(--green)}
+  .row.waiting{border-left-color:var(--red);background:var(--white)}
 
   /* ---------- scoreboard ---------- */
-  #board{position:absolute;inset:0;background:rgba(8,7,12,.975);display:none;
-         flex-direction:column;justify-content:center;align-items:center;gap:var(--s5);padding:var(--s6) var(--s8);overflow:hidden}
-  #board .eyebrow{color:var(--paper-dim)}
-  .replay{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6);width:min(1180px,92%)}
-  .replay .pane{position:relative;border:1px solid var(--ink-600);border-radius:var(--r-md);
-                background:var(--ink-800);overflow:hidden}
+  #board{position:absolute;inset:0;background:var(--paper);display:none;
+         flex-direction:column;justify-content:center;align-items:center;gap:var(--s5);
+         padding:var(--s6) var(--s8);overflow:hidden}
+  .replay{display:grid;grid-template-columns:1fr 1fr;gap:var(--s5);width:min(1180px,92%)}
+  .replay .pane{position:relative;border:var(--line) solid var(--ink);border-radius:var(--r-md);
+                background:var(--white);overflow:hidden}
   .replay canvas{display:block;width:100%;height:240px}
-  .replay .lbl{position:absolute;top:10px;left:14px;font-size:var(--fb-eyebrow);z-index:1;
-               letter-spacing:var(--track-label);text-transform:uppercase}
-  .replay .lbl.human{color:var(--paper)} .replay .lbl.central{color:var(--signal-green)}
-  .replay .t{position:absolute;top:12px;right:14px;font-family:var(--serif);font-size:var(--fb-lg);
-             color:var(--paper-dim);font-variant-numeric:tabular-nums}
-  .score{display:grid;grid-template-columns:auto auto;gap:var(--s5) var(--s8);align-items:baseline}
-  .score .k{font-size:var(--fb-xl);letter-spacing:var(--track-label);text-transform:uppercase}
-  .score .v{font-family:var(--serif);font-size:var(--fb-score);font-variant-numeric:tabular-nums;
-            text-align:right;line-height:.9}
-  .k.human,.v.human{color:var(--paper)}
-  .k.agent,.v.agent{color:var(--agent)}
-  .k.opt,.v.opt{color:var(--signal-green)}
-  .verdict{font-family:var(--serif);font-size:var(--fb-display);color:var(--brass-400);text-align:center}
-  #board .note{color:var(--paper-dim);font-size:var(--fb-body);max-width:680px;text-align:center;line-height:1.6}
+  .replay .lbl{position:absolute;top:10px;left:14px;font-size:var(--fb-micro);font-weight:700;z-index:1;
+               text-transform:uppercase;letter-spacing:.04em}
+  .replay .lbl.human{color:var(--ink)} .replay .lbl.central{color:var(--green)}
+  .replay .t{position:absolute;top:8px;right:14px;font-size:var(--fb-lg);font-weight:700;
+             color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .score{display:grid;grid-template-columns:auto auto;gap:var(--s3) var(--s8);align-items:center}
+  .score .k{font-size:var(--fb-lg);font-weight:600}
+  .score .v{font-size:var(--fb-score);font-weight:700;font-variant-numeric:tabular-nums;
+            text-align:right;line-height:.9;letter-spacing:-.02em}
+  .k.human,.v.human{color:var(--ink)}
+  .k.opt,.v.opt{color:var(--green)}
+  .verdict{font-size:var(--fb-display);font-weight:700;text-align:center;line-height:1.1}
+  #rivalLine{font-weight:700;color:var(--agent);font-size:var(--fb-body)}
+  #board .note{color:var(--ink-2);font-size:var(--fb-body);max-width:680px;text-align:center;line-height:1.5;margin:0}
+  #recap{color:var(--ink);font-size:var(--fb-lg);font-weight:600;max-width:760px}
 </style>
 </head>
 <body>
 <main>
   <canvas id="cv"></canvas>
-  <div class="frame"></div>
   <div class="masthead">
     <h1>Midnight Express</h1>
-    <div class="sub"><div class="bar"></div><span>Dispatch Board · Pittsburgh Division</span></div>
+    <div class="sub">Dispatch Board · Pittsburgh Division</div>
   </div>
   <div class="clock"><b id="clk" class="num">00:00</b><span id="phase">awaiting departure</span></div>
   <div id="chips"></div>
@@ -124,8 +112,8 @@
 
   <div id="board">
     <div class="replay">
-      <div class="pane"><canvas id="rpA"></canvas><div class="lbl human">Human swarm</div><div class="t num" id="rpAt">00:00</div></div>
-      <div class="pane"><canvas id="rpB"></canvas><div class="lbl central">Central dispatcher</div><div class="t num" id="rpBt">00:00</div></div>
+      <div class="pane"><canvas id="rpA"></canvas><div class="lbl human">Everyone, self-interested</div><div class="t num" id="rpAt">00:00</div></div>
+      <div class="pane"><canvas id="rpB"></canvas><div class="lbl central">One central dispatcher</div><div class="t num" id="rpBt">00:00</div></div>
     </div>
     <div class="eyebrow">Total delay, all trains</div>
     <div class="score">
@@ -133,8 +121,8 @@
       <div class="k opt">One central dispatcher</div><div class="v opt num" id="sOpt">—</div>
     </div>
     <div class="verdict" id="verdict"></div>
-    <div class="eyebrow" id="rivalLine" style="color:var(--agent)"></div>
-    <p class="note" id="recap" style="color:var(--brass-300);font-family:var(--serif);font-size:var(--fb-lg);max-width:760px"></p>
+    <div id="rivalLine"></div>
+    <p class="note" id="recap"></p>
     <p class="note">A single dispatcher, given every train's route in advance, allocates the same
        network in a fraction of the delay. That gap is the price of everyone acting in their own interest.</p>
   </div>
@@ -145,13 +133,13 @@
     <div class="eyebrow">Scan to board a train</div>
     <img id="qr" src="/qr.png" alt="Scan to join">
     <div class="u" id="joinUrl">—</div>
-    <div class="eyebrow" style="margin-top:10px;color:var(--paper-faint)">new here? <span id="howUrl">/how.html</span></div>
+    <div class="how">New here? <span id="howUrl">/how</span></div>
   </div>
   <div class="sec" id="auctionBox">
     <div class="eyebrow">Contested track</div>
     <div id="aucList"><div class="quiet">Network clear.</div></div>
   </div>
-  <div class="sec" style="padding-bottom:0"><div class="eyebrow">Trains</div></div>
+  <div class="sec" style="padding-bottom:var(--s2)"><div class="eyebrow">Trains</div></div>
   <div id="roster"></div>
 </aside>
 
@@ -160,10 +148,25 @@ const $ = (id) => document.getElementById(id);
 const cv = $("cv"), ctx = cv.getContext("2d");
 const proto = location.protocol === "https:" ? "wss:" : "ws:";
 let net = null, state = null, tickHz = 20, flash = new Map(), ws;
-const smooth = new Map();   // trainId -> {x,y} rendered position, lerped toward target
+const smooth = new Map();   // trainId -> {x,y,a} rendered position + heading, lerped toward target
+
+// palette, read once from the tokens so canvas and CSS never disagree
+const css = getComputedStyle(document.documentElement);
+const C = {
+  paper: css.getPropertyValue("--paper").trim(), rail: css.getPropertyValue("--paper-3").trim(),
+  white: css.getPropertyValue("--white").trim(), ink: css.getPropertyValue("--ink").trim(),
+  ink2: css.getPropertyValue("--ink-2").trim(), red: css.getPropertyValue("--red").trim(),
+  green: css.getPropertyValue("--green").trim(),
+};
+const FONT = (w, px) => `${w} ${px}px Cabin, "Gill Sans", "Trebuchet MS", sans-serif`;
+/** "03:42" -> one fixed-width box per character, so ticking digits do not shift the layout. */
+const tabular = (el, str) => { if (el.dataset.v === str) return; el.dataset.v = str;
+  el.innerHTML = [...str].map((c) => `<i${c === ":" ? ' class="c"' : ""}>${c}</i>`).join(""); };
+const mmss = (secs) => `${String(Math.floor(secs/60)).padStart(2,"0")}:${String(Math.floor(secs%60)).padStart(2,"0")}`;
+if (document.fonts?.load) { document.fonts.load(FONT(700, 15)); document.fonts.load(FONT(600, 13)); }
 
 fetch("/join-url").then(r => r.json())
-  .then(d => { $("joinUrl").textContent = d.url.replace(/^https?:\/\//, ""); $("howUrl").textContent = d.url.replace(/^https?:\/\//, "").replace(/\/(play|p)?\/?$/, "") + "/how.html"; }).catch(()=>{});
+  .then(d => { $("joinUrl").textContent = d.url.replace(/^https?:\/\//, ""); $("howUrl").textContent = d.url.replace(/^https?:\/\//, "").replace(/\/(play|p)?\/?$/, "") + "/how"; }).catch(()=>{});
 
 function connect() {
   ws = new WebSocket(`${proto}//${location.host}/?role=screen`);
@@ -184,13 +187,13 @@ connect();
 
 // ------------------------------------------------------------------ the voice
 // Rule-based lines come from the server; the browser speaks them. No API key
-// needed for this path -- Gemini only improves the phrasing and the voice.
+// needed for this path -- a model only improves the phrasing.
 let paTimer = null;
 const SPEAK = new URLSearchParams(location.search).get("mute") === null;
 
 function announce(text) {
   const pa = $("pa");
-  pa.innerHTML = `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#F0C462" stroke-width="1.6"
+  pa.innerHTML = `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
       stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h4l5 4V6l-5 4H3z"/>
       <path d="M16 8.5a4 4 0 0 1 0 7"/><path d="M18.5 6a7.5 7.5 0 0 1 0 12"/></svg>
     <div class="txt">${text.replace(/</g, "&lt;")}</div>`;
@@ -232,9 +235,24 @@ const px = (n) => ({ x: n.x * S + OX, y: n.y * S + OY });
 function targetPos(t) {
   if (t.state === "on_segment" && t.from && t.to) {
     const A = px(net.nodes[t.from]), B = px(net.nodes[t.to]);
-    return { x: A.x + (B.x - A.x) * t.progress, y: A.y + (B.y - A.y) * t.progress };
+    return { x: A.x + (B.x - A.x) * t.progress, y: A.y + (B.y - A.y) * t.progress, a: Math.atan2(B.y - A.y, B.x - A.x) };
   }
-  return net.nodes[t.node] ? px(net.nodes[t.node]) : null;
+  return net.nodes[t.node] ? { ...px(net.nodes[t.node]), a: null } : null;
+}
+
+const degree = {};   // stations with many tracks get a bigger ring, like an interchange
+function nodeRadius(id) {
+  if (!degree[id]) for (const s of net.segments) { degree[s.a] = (degree[s.a] || 0) + 1; degree[s.b] = (degree[s.b] || 0) + 1; }
+  return degree[id] >= 5 ? 17 : 13;
+}
+
+/** A rounded rectangle centred on (x,y), rotated by angle a. */
+function pill(g, x, y, w, h, a, fill, stroke, lw) {
+  g.save(); g.translate(x, y); g.rotate(a || 0);
+  g.beginPath(); g.roundRect(-w / 2, -h / 2, w, h, h / 2);
+  g.fillStyle = fill; g.fill();
+  if (stroke) { g.lineWidth = lw; g.strokeStyle = stroke; g.stroke(); }
+  g.restore();
 }
 
 // ------------------------------------------------------------------ draw
@@ -245,75 +263,59 @@ function draw() {
   ctx.clearRect(0, 0, cv.clientWidth, cv.clientHeight);
   const now = performance.now();
   const occ = state?.segments || {};
+  const byId = Object.fromEntries((state?.trains || []).map(t => [t.id, t]));
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
 
-  // --- rails ---
+  // --- rails: pale when free, the train's colour when held, red with running white dashes when contested ---
   for (const s of net.segments) {
     const A = px(net.nodes[s.a]), B = px(net.nodes[s.b]);
     const f = flash.get(s.id);
     const hot = f && now - f < 5200;
     const busy = occ[s.id];
-    ctx.lineCap = "round";
-
-    // sleeper bed under every rail (deco texture, cheap)
-    ctx.strokeStyle = "#15111F"; ctx.lineWidth = hot ? 16 : 11;
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = hot ? C.red : busy && byId[busy] ? byId[busy].color : C.rail;
     ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
-
     if (hot) {
-      const pulse = 0.55 + 0.45 * Math.sin(now / 150);
-      ctx.strokeStyle = "#FF5470"; ctx.lineWidth = 7;
-      ctx.shadowColor = "#FF5470"; ctx.shadowBlur = 34 * pulse;
-    } else if (busy) {
-      ctx.strokeStyle = "#4B4068"; ctx.lineWidth = 5;
-    } else {
-      ctx.strokeStyle = "#211C2E"; ctx.lineWidth = 4;
+      ctx.save();
+      ctx.setLineDash([12, 12]); ctx.lineDashOffset = -(now / 40) % 24;
+      ctx.lineWidth = 4; ctx.strokeStyle = C.white; ctx.lineCap = "butt";
+      ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
+      ctx.restore();
     }
-    ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
-    ctx.shadowBlur = 0;
   }
 
-  // --- stations ---
-  for (const n of Object.values(net.nodes)) {
-    const P = px(n);
-    ctx.fillStyle = "#08070C"; ctx.strokeStyle = "#8A6A2C"; ctx.lineWidth = 2.5;
-    ctx.beginPath(); ctx.arc(P.x, P.y, 11, 0, 7); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#E0A93F";
-    ctx.beginPath(); ctx.arc(P.x, P.y, 3.5, 0, 7); ctx.fill();
-
-    ctx.fillStyle = "#B0A791";
-    ctx.font = "700 15px ui-sans-serif, system-ui";
-    ctx.textAlign = "center";
-    ctx.letterSpacing = "2px";
-    ctx.fillText(n.name.toUpperCase(), P.x, P.y - 26);
-    ctx.letterSpacing = "0px";
+  // --- stations: white disc, black ring, name above ---
+  for (const [id, n] of Object.entries(net.nodes)) {
+    const P = px(n), r = nodeRadius(id);
+    ctx.fillStyle = C.white; ctx.strokeStyle = C.ink; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(P.x, P.y, r, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = C.ink; ctx.font = FONT(700, 15); ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+    ctx.fillText(n.name, P.x, P.y - r - 12);
   }
 
-  // --- trains (lerped so slow movement still looks fluid) ---
+  // --- trains: pills along the track, lerped so slow movement still looks fluid ---
   for (const t of state?.trains || []) {
     const tgt = targetPos(t); if (!tgt) continue;
     let s = smooth.get(t.id);
-    if (!s) { s = { ...tgt }; smooth.set(t.id, s); }
+    if (!s) { s = { x: tgt.x, y: tgt.y, a: tgt.a ?? 0 }; smooth.set(t.id, s); }
     s.x += (tgt.x - s.x) * 0.22;
     s.y += (tgt.y - s.y) * 0.22;
+    if (tgt.a != null) s.a = tgt.a;
 
-    const r = t.isAgent ? 8 : 13;
-    if (t.state === "waiting") {
-      ctx.strokeStyle = "#FF5470"; ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.arc(s.x, s.y, r + 9 + Math.sin(now / 160) * 3, 0, 7); ctx.stroke();
-    }
-    ctx.shadowColor = t.color; ctx.shadowBlur = t.isAgent ? 8 : 22;
-    ctx.fillStyle = t.color;
-    ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, 7); ctx.fill();
-    ctx.shadowBlur = 0;
+    const human = !t.isAgent;
+    const w = human ? 30 : 20, h = human ? 16 : 11;
+    const held = t.state === "waiting", home = t.state === "arrived";
+    ctx.globalAlpha = home ? 0.35 : human ? 1 : 0.9;
+    pill(ctx, s.x, s.y, w, h, s.a, t.color,
+         held ? C.red : home ? C.green : human ? C.ink : null, held ? 3 : 2.5);
+    ctx.globalAlpha = 1;
 
-    if (t.state === "arrived") {
-      ctx.strokeStyle = "#25D9A0"; ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.arc(s.x, s.y, r + 6, 0, 7); ctx.stroke();
-    }
-    if (!t.isAgent) {
-      ctx.fillStyle = "#F4EDDC";
-      ctx.font = "700 13px ui-sans-serif, system-ui";
-      ctx.textAlign = "center";
-      ctx.fillText(t.name, s.x, s.y + r + 18);
+    if (human) {
+      ctx.font = FONT(700, 13); ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+      ctx.lineWidth = 4; ctx.strokeStyle = C.paper; ctx.lineJoin = "round";
+      ctx.strokeText(t.name, s.x, s.y + h / 2 + 16);
+      ctx.fillStyle = held ? C.red : C.ink;
+      ctx.fillText(t.name, s.x, s.y + h / 2 + 16);
     }
   }
 
@@ -322,8 +324,8 @@ function draw() {
   for (const a of state?.auctions || []) {
     const seg = net.segments.find(s => s.id === a.segment); if (!seg) continue;
     const A = px(net.nodes[seg.a]), B = px(net.nodes[seg.b]);
-    chips.push(`<div class="chip" style="left:${(A.x+B.x)/2}px;top:${(A.y+B.y)/2 - 44}px">
-        <b>Contested</b><i>${a.bidders.map(b=>b.name).join(" vs ")}</i></div>`);
+    chips.push(`<div class="chip" style="left:${(A.x+B.x)/2}px;top:${(A.y+B.y)/2 - 30}px">
+        <b>Contested</b>${a.bidders.map(b=>b.name).join(" vs ")}</div>`);
   }
   const box = $("chips");
   const html = chips.join("");
@@ -331,7 +333,7 @@ function draw() {
 
   if (state) {
     const secs = state.tick / tickHz;
-    $("clk").textContent = `${String(Math.floor(secs/60)).padStart(2,"0")}:${String(Math.floor(secs%60)).padStart(2,"0")}`;
+    tabular($("clk"), mmss(secs));
     $("phase").textContent = state.phase === "running" ? "en route" : state.phase;
   }
 }
@@ -394,12 +396,12 @@ function startReplay(s) {
       g.lineCap = "round";
       for (const seg of net.segments) {
         const A = P(net.nodes[seg.a]), B = P(net.nodes[seg.b]);
-        g.strokeStyle = "#211C2E"; g.lineWidth = 2.5;
+        g.strokeStyle = C.rail; g.lineWidth = 4;
         g.beginPath(); g.moveTo(A.x, A.y); g.lineTo(B.x, B.y); g.stroke();
       }
       for (const n of Object.values(net.nodes)) {
-        const Q = P(n); g.fillStyle = "#8A6A2C";
-        g.beginPath(); g.arc(Q.x, Q.y, 3, 0, 7); g.fill();
+        const Q = P(n); g.fillStyle = C.white; g.strokeStyle = C.ink; g.lineWidth = 1.5;
+        g.beginPath(); g.arc(Q.x, Q.y, 4, 0, 7); g.fill(); g.stroke();
       }
       let snap = log[0];
       for (const e of log) { if (e.tick <= tick) snap = e; else break; }
@@ -412,14 +414,14 @@ function startReplay(s) {
           const A = P(from), B = P(to);
           Q = { x: A.x + (B.x - A.x) * t.progress, y: A.y + (B.y - A.y) * t.progress };
         } else if (net.nodes[t.node]) Q = P(net.nodes[t.node]); else continue;
-        const col = colorByName[names[t.id]] || "#F4EDDC";
-        if (t.state === "waiting") { g.strokeStyle = "#FF5470"; g.lineWidth = 1.5;
-          g.beginPath(); g.arc(Q.x, Q.y, 9, 0, 7); g.stroke(); }
-        g.fillStyle = col; g.globalAlpha = t.state === "arrived" ? .35 : 1;
-        g.beginPath(); g.arc(Q.x, Q.y, 5.5, 0, 7); g.fill(); g.globalAlpha = 1;
+        const col = colorByName[names[t.id]] || C.ink;
+        g.globalAlpha = t.state === "arrived" ? .3 : 1;
+        g.fillStyle = col; g.beginPath(); g.arc(Q.x, Q.y, 5.5, 0, 7); g.fill();
+        if (t.state === "waiting") { g.strokeStyle = C.red; g.lineWidth = 2; g.beginPath(); g.arc(Q.x, Q.y, 8.5, 0, 7); g.stroke(); }
+        g.globalAlpha = 1;
       }
       const shown = Math.min(tick, log.at(-1)?.tick || 0) / tickHz;
-      p.tEl.textContent = `${String(Math.floor(shown/60)).padStart(2,"0")}:${String(Math.floor(shown%60)).padStart(2,"0")}`;
+      tabular(p.tEl, mmss(shown));
     }
     if (tick < maxTick) replayRAF = requestAnimationFrame(frame);
   }

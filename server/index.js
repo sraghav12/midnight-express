@@ -72,7 +72,7 @@ const server = http.createServer((req, res) => {
   if (url === "/qr.png") {
     const target = joinURL(req.headers.host);
     return QRCode.toBuffer(target, { width: 560, margin: 1,
-      color: { dark: "#0b0a10", light: "#efe6d2" } })
+      color: { dark: "#1b1b1b", light: "#ffffff" } })
       .then((buf) => { res.writeHead(200, { "content-type": "image/png", "cache-control": "no-store" }); res.end(buf); })
       .catch(() => { res.writeHead(500); res.end("qr failed"); });
   }

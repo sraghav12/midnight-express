@@ -20,9 +20,11 @@ export const RUN_TICKS           = Math.round(Number(process.env.RUN_SECONDS || 
 export const START_BUDGET        = Number(process.env.START_BUDGET || 100);
 
 
+// Transit-map line colours: saturated, distinct from each other on paper, and
+// none of them the signal red the board reserves for contested track.
 const COLORS = [
-  "#ffd166", "#06d6a0", "#ef476f", "#118ab2", "#f78c6b", "#c77dff",
-  "#8ac926", "#ff70a6", "#4cc9f0", "#ffa62b", "#90be6d", "#f9c74f",
+  "#0072BC", "#F28C00", "#00A651", "#7A4BC8", "#E5007E", "#00A3AD",
+  "#8A6D3B", "#4C6EF5", "#C68A00", "#00776B", "#6B8E23", "#2C3E7A",
 ];
 
 let seq = 0;

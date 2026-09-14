@@ -31,7 +31,7 @@ evaluation harness with ablations, pluggable model backends, CI and a Docker ima
   <tr>
     <td align="center">Drive: pre-select your next track while moving</td>
     <td align="center">Bid: eight seconds, second price</td>
-    <td align="center">Arrive: your auctions, on-chain</td>
+    <td align="center">Arrive: delay, auctions, tokens, and Explorer links when the chain is on</td>
   </tr>
 </table>
 
@@ -201,5 +201,6 @@ tools/pitch/     the pitch-video pipeline, in its own package so the game stays 
 
 Built by [@sraghav12](https://github.com/sraghav12) at HackCMU 2026. The rival was routed by
 [IFM K2 Horizon 0.9B](https://huggingface.co/IFM/K2-Horizon-0.9B-GGUF) running locally; the
-dispatcher was voiced through Gemini. Art-deco design system in [docs/DESIGN.md](docs/DESIGN.md).
-MIT licensed.
+dispatcher was voiced through Gemini. The interface is a transit map on paper, set in
+[Cabin](https://fonts.google.com/specimen/Cabin) (SIL OFL, self-hosted); the design system is in
+[docs/DESIGN.md](docs/DESIGN.md). MIT licensed.

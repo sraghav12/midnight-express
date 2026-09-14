@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#08070C">
+<meta name="theme-color" content="#F3EFE6">
 <title>Midnight Express</title>
 <link rel="stylesheet" href="/tokens.css">
 <style>
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%;overscroll-behavior:none}
   body{
-    background:radial-gradient(130% 75% at 50% -5%,#1A1428 0%,var(--ink-900) 58%);
-    color:var(--paper);font-family:var(--sans);font-size:var(--fp-body);
+    --me:var(--ink);                       /* your train's colour, set on welcome */
+    background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:var(--fp-body);
     display:flex;flex-direction:column;height:100dvh;
     padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)
   }
@@ -19,34 +19,34 @@
   .hide{display:none!important}
 
   /* ---------------- join ---------------- */
-  #join{flex:1;display:flex;flex-direction:column;justify-content:center;gap:var(--s5);padding:var(--s6) var(--s5)}
-  #join h1{
-    margin:0;font-family:var(--serif);font-size:var(--fp-display);
-    letter-spacing:.24em;text-transform:uppercase;color:var(--brass-400);line-height:1.25
-  }
-  #join .tag{margin:0;color:var(--paper-dim);font-size:var(--fp-lg);line-height:1.5}
-  #join .tag b{color:var(--paper);display:block;margin-top:var(--s1)}
+  #join{flex:1;display:flex;flex-direction:column;justify-content:center;gap:var(--s4);padding:var(--s6) var(--s5)}
+  #join h1{margin:0 0 var(--s2);font-size:40px;font-weight:700;line-height:1;letter-spacing:-.01em}
+  #join .tag{margin:0 0 var(--s3);color:var(--ink-2);font-size:var(--fp-lg);line-height:1.4}
+  #join .tag b{color:var(--ink);display:block}
   input[type=text]{
     width:100%;min-height:var(--touch-min);padding:0 var(--s4);border-radius:var(--r-md);
-    border:1px solid var(--ink-600);background:var(--ink-700);color:var(--paper);
+    border:var(--line) solid var(--ink);background:var(--white);color:var(--ink);
     font-size:var(--fp-lg);font-family:var(--sans)
   }
+  input[type=text]::placeholder{color:var(--ink-3)}
+  .btn + .btn, .btn + a.btn{margin-top:-4px}
+  a.btn{text-decoration:none;display:flex;align-items:center;justify-content:center}
 
   /* ---------------- header ---------------- */
-  header{padding:var(--s3) var(--s4);border-bottom:1px solid var(--ink-600);
-         display:flex;align-items:center;gap:var(--s3)}
-  .dot{width:14px;height:14px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 14px currentColor}
+  #stripe{height:10px;background:var(--me);flex:0 0 auto}
+  header{padding:var(--s3) var(--s4);border-bottom:var(--line) solid var(--ink);
+         display:flex;align-items:center;gap:var(--s3);background:var(--white)}
+  .dot{width:18px;height:18px;border-radius:4px;flex:0 0 auto;border:var(--line) solid var(--ink)}
   .route{flex:1;min-width:0}
-  .route b{display:block;font-size:var(--fp-lg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .route b{display:block;font-size:var(--fp-lg);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .budget{text-align:right;flex:0 0 auto}
-  .budget b{display:block;font-family:var(--serif);font-size:var(--fp-xl);
-            color:var(--brass-400);font-variant-numeric:tabular-nums;line-height:1}
+  .budget b{display:block;font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
 
   /* ---------------- status ---------------- */
   #status{padding:var(--s5) var(--s4) var(--s3);text-align:center}
-  #where{font-family:var(--serif);font-size:var(--fp-xl);margin-top:var(--s2);letter-spacing:var(--track-tight)}
-  #progWrap{height:4px;background:var(--ink-600);border-radius:2px;margin-top:var(--s4);overflow:hidden}
-  #prog{height:100%;width:0;background:var(--brass-500);transition:width .18s linear}
+  #where{font-size:var(--fp-xl);font-weight:700;margin-top:var(--s2)}
+  #progWrap{height:8px;background:var(--paper-3);border-radius:4px;margin-top:var(--s4);overflow:hidden}
+  #prog{height:100%;width:0;background:var(--me);transition:width .18s linear}
 
   /* ---------------- steering ---------------- */
   #steerWrap{flex:1;min-height:0;overflow-y:auto;padding:var(--s2) var(--s4)}
@@ -54,69 +54,70 @@
   .choice{
     width:100%;min-height:var(--touch-min);display:flex;align-items:center;gap:var(--s3);
     padding:0 var(--s4);margin-bottom:10px;border-radius:var(--r-md);
-    border:1px solid var(--ink-600);background:var(--ink-700);color:var(--paper);
+    border:var(--line) solid var(--ink);background:var(--white);color:var(--ink);
     text-align:left;font-family:var(--sans)
   }
-  .choice.rec{border-color:var(--brass-500);background:#1F1830}
-  .choice.sel{border-color:var(--signal-green);background:#0C2620}
-  .choice .n{flex:1;font-size:var(--fp-lg)}
-  .choice .tag{font-size:var(--fp-eyebrow);letter-spacing:var(--track-label);
-               text-transform:uppercase;color:var(--brass-400)}
-  .choice .occ{font-size:var(--fp-eyebrow);letter-spacing:var(--track-label);
-               text-transform:uppercase;color:var(--signal-red)}
+  .choice .n{flex:1;font-size:var(--fp-lg);font-weight:600}
+  .choice .tag,.choice .occ{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+                            padding:3px 7px;border-radius:var(--r-sm)}
+  .choice .tag{background:var(--ink);color:var(--white)}
+  .choice .occ{border:var(--line) solid var(--red);color:var(--red)}
+  .choice.sel{background:var(--me);border-color:var(--me);color:var(--white)}
+  .choice.sel .tag{background:var(--white);color:var(--ink)}
+  .choice.sel .occ{border-color:var(--white);color:var(--white)}
 
   /* ---------------- throttle ---------------- */
-  #throttleWrap{padding:var(--s3) var(--s4) var(--s4);border-top:1px solid var(--ink-600)}
+  #throttleWrap{padding:var(--s3) var(--s4) var(--s4);border-top:var(--line) solid var(--ink);background:var(--paper-2)}
   #throttle{
-    width:100%;height:84px;border-radius:var(--r-lg);border:1px solid var(--brass-700);
-    background:linear-gradient(#26200F,#181309);color:var(--brass-400);
-    font-size:var(--fp-body);letter-spacing:var(--track-label);text-transform:uppercase;
+    width:100%;height:84px;border-radius:var(--r-md);border:var(--line) solid var(--ink);
+    background:var(--white);color:var(--ink);font-size:var(--fp-lg);letter-spacing:.04em;text-transform:uppercase;
     font-weight:700;touch-action:none;font-family:var(--sans)
   }
-  #throttle.on{background:linear-gradient(#3E3014,#2C2210);color:var(--brass-300);border-color:var(--brass-500)}
+  #throttle.on{background:var(--me);color:var(--white);border-color:var(--me)}
 
-  /* ---------------- auction ---------------- */
+  /* ---------------- auction: the whole phone turns red ---------------- */
   #auction{
     position:fixed;inset:0;z-index:50;padding:var(--s6) var(--s5);
     display:flex;flex-direction:column;justify-content:center;gap:var(--s4);
-    background:radial-gradient(120% 70% at 50% 0%,#3A0E1E 0%,#0B060A 62%);
-    animation:slam .3s cubic-bezier(.2,1.4,.4,1)
+    background:var(--red);color:var(--white);
+    animation:slam .25s cubic-bezier(.2,1.4,.4,1)
   }
-  @keyframes slam{from{opacity:0;transform:scale(1.06)}to{opacity:1;transform:none}}
-  #auction .eyebrow{color:var(--signal-red);font-size:var(--fp-micro)}
-  #segName{margin:0;font-family:var(--serif);font-size:var(--fp-display);line-height:1.15}
-  #timer{height:7px;border-radius:4px;background:#3A2430;overflow:hidden}
-  #timerFill{height:100%;width:100%;background:var(--signal-red)}
-  #bidVal{font-family:var(--serif);font-size:var(--fp-bid);color:var(--brass-400);
-          font-variant-numeric:tabular-nums;text-align:center;line-height:1}
-  input[type=range]{width:100%;height:52px;accent-color:var(--brass-500)}
+  @keyframes slam{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+  #auction .eyebrow{color:var(--white)}
+  #segName{margin:0;font-size:var(--fp-display);font-weight:700;line-height:1.1}
+  #timer{height:8px;border-radius:4px;background:rgba(255,255,255,.35);overflow:hidden}
+  #timerFill{height:100%;width:100%;background:var(--white)}
+  #bidVal{font-size:var(--fp-bid);font-weight:700;text-align:center;line-height:1;letter-spacing:-.02em}
+  /* Cabin's figures are proportional; box each digit so a moving number does not wobble */
+  #bidVal i,#budgetTxt i{display:inline-block;font-style:normal;width:.64em;text-align:center}
+  input[type=range]{width:100%;height:52px;accent-color:var(--white)}
   .quick{display:flex;gap:var(--s2)}
   .quick button{
-    flex:1;min-height:52px;border-radius:var(--r-md);border:1px solid var(--ink-600);
-    background:var(--ink-700);color:var(--paper);font-size:var(--fp-body);font-family:var(--sans)
+    flex:1;min-height:52px;border-radius:var(--r-md);border:var(--line) solid var(--white);
+    background:transparent;color:var(--white);font-size:var(--fp-body);font-weight:700;font-family:var(--sans)
   }
-  .quick button:active{border-color:var(--brass-500)}
-  .rivals{font-size:var(--fp-micro);color:var(--paper-dim);text-align:center;min-height:18px}
+  .quick button:active{background:var(--white);color:var(--red)}
+  .rivals{font-size:var(--fp-body);color:rgba(255,255,255,.85);text-align:center;min-height:18px}
 
   /* ---------------- end ---------------- */
   #end{flex:1;display:flex;flex-direction:column;justify-content:center;gap:var(--s4);
-       padding:var(--s6) var(--s5);text-align:center}
-  #end h2{margin:0;font-family:var(--serif);font-size:var(--fp-display);
-          color:var(--brass-400);letter-spacing:var(--track-display)}
+       padding:var(--s6) var(--s5)}
+  #end h2{margin:0;font-size:var(--fp-huge);font-weight:700;line-height:1;letter-spacing:-.01em}
   .stat{display:flex;justify-content:space-between;align-items:baseline;
-        padding:var(--s3) 0;border-bottom:1px solid var(--ink-600);font-size:var(--fp-body)}
-  .stat span{color:var(--paper-dim)}
-  .stat b{font-family:var(--serif);font-size:var(--fp-lg);font-variant-numeric:tabular-nums}
+        padding:var(--s3) 0;border-bottom:var(--line) solid var(--paper-3);font-size:var(--fp-body)}
+  .stat span{color:var(--ink-2)}
+  .stat b{font-size:var(--fp-xl);font-weight:700;font-variant-numeric:tabular-nums}
   a.explorer{
     display:flex;align-items:center;justify-content:center;min-height:var(--touch-min);
-    border-radius:var(--r-md);background:#0E2A3A;border:1px solid #1D7FA8;
-    color:#8EDBFF;text-decoration:none;font-size:var(--fp-body);padding:var(--s3)
+    border-radius:var(--r-md);background:var(--ink);border:var(--line) solid var(--ink);
+    color:var(--white);text-decoration:none;font-size:var(--fp-body);font-weight:700;padding:var(--s3)
   }
+  #myBids a.explorer{background:var(--white);color:var(--ink)}
   .toast{
     position:fixed;left:50%;transform:translateX(-50%);
-    bottom:calc(20px + env(safe-area-inset-bottom));
-    background:var(--ink-700);border:1px solid var(--brass-700);color:var(--paper);
-    padding:12px 20px;border-radius:var(--r-pill);font-size:var(--fp-body);
+    bottom:calc(128px + env(safe-area-inset-bottom));   /* clear of the throttle */
+    background:var(--ink);color:var(--white);
+    padding:12px 18px;border-radius:var(--r-md);font-size:var(--fp-body);font-weight:600;
     z-index:60;opacity:0;transition:opacity .2s;pointer-events:none
   }
   .toast.show{opacity:1}
@@ -130,10 +131,11 @@
     <input id="name" type="text" placeholder="Your name" autocomplete="off" maxlength="16" enterkeyhint="go">
     <button class="btn" id="joinBtn">Board the train</button>
     <button class="btn btn--ghost" id="spectate">Just watching</button>
-    <a class="btn btn--ghost" href="/how.html" style="text-decoration:none;display:flex;align-items:center;justify-content:center">How to play</a>
+    <a class="btn btn--ghost" href="/how">How to play</a>
   </section>
 
   <section id="game" class="wrap hide">
+    <div id="stripe"></div>
     <header>
       <div class="dot" id="dot"></div>
       <div class="route"><b id="routeTxt">—</b><span class="eyebrow">Your route</span></div>
@@ -160,7 +162,7 @@
       <div class="stat"><span>Final balance</span><b id="eBal">—</b></div>
     </div>
     <a class="explorer hide" id="explorer" target="_blank" rel="noopener">View this run on Solana →</a>
-  <div id="myBids"></div>
+    <div id="myBids"></div>
     <button class="btn btn--ghost" id="again">Ride again</button>
   </section>
 </div>
@@ -210,6 +212,9 @@ function toast(msg, ms = 1900) {
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), ms);
 }
 function send(o){ if (ws?.readyState === 1) ws.send(JSON.stringify(o)); }
+/** Numbers that change while you watch get one fixed-width box per digit. */
+function setNum(el, v) { const s = String(v); if (el.dataset.v === s) return; el.dataset.v = s; el.innerHTML = [...s].map((c) => `<i>${c}</i>`).join(""); }
+const budgetNum = () => Number($("budgetTxt").dataset.v ?? $("budgetTxt").textContent) || 0;
 
 function connect() {
   ws = new WebSocket(`${proto}//${location.host}/?role=player`);
@@ -246,9 +251,9 @@ $("spectate").onclick = () => { unlockAudio(); $("join").classList.add("hide");
 function onWelcome(m) {
   me = m.trainId; net = m.network || net;
   $("join").classList.add("hide"); $("game").classList.remove("hide");
-  $("dot").style.color = m.color; $("dot").style.background = m.color;
+  $("dot").style.background = m.color; document.body.style.setProperty("--me", m.color);
   $("routeTxt").textContent = `${net.nodes[m.origin].name} → ${net.nodes[m.destination].name}`;
-  $("budgetTxt").textContent = m.budget;
+  setNum($("budgetTxt"), m.budget);
   $("bidRange").max = m.budget;
   chime([660, 990], .18);
   toast(`You are ${m.name}`);
@@ -257,7 +262,7 @@ function onWelcome(m) {
 function onState(m) {
   if (!me) return;
   const t = m.trains.find(x => x.id === me); if (!t) return;
-  $("budgetTxt").textContent = t.budget;
+  setNum($("budgetTxt"), t.budget);
   $("bidRange").max = Math.max(1, t.budget);
   const nm = (k) => net.nodes[k]?.name ?? k;
 
@@ -349,9 +354,9 @@ function openAuction(a) {
   curAuction = a;
   $("auction").classList.remove("hide");
   $("segName").textContent = a.segmentName;
-  const budget = Number($("budgetTxt").textContent) || 100;
+  const budget = budgetNum() || 100;
   $("bidRange").max = Math.max(1, budget);
-  $("bidRange").value = 0; $("bidVal").textContent = "0";
+  $("bidRange").value = 0; setNum($("bidVal"), 0);
   $("rivals").textContent = a.bidders.filter(b => b.trainId !== me).map(b => b.name).join(" · ") + " also want this track";
   alertPlayer();
 
@@ -366,12 +371,12 @@ function openAuction(a) {
 function closeAuction(){ $("auction").classList.add("hide"); curAuction = null; }
 
 $("bidRange").addEventListener("input", e => {
-  $("bidVal").textContent = e.target.value;
+  setNum($("bidVal"), e.target.value);
   if (curAuction) send({ t:"bid", auctionId: curAuction.auctionId, amount:+e.target.value });
 });
 document.querySelectorAll(".quick button").forEach(b => b.onclick = () => {
   const amt = Math.floor((+$("bidRange").max) * (+b.dataset.pct) / 100);
-  $("bidRange").value = amt; $("bidVal").textContent = amt;
+  $("bidRange").value = amt; setNum($("bidVal"), amt);
   if (curAuction) send({ t:"bid", auctionId: curAuction.auctionId, amount: amt });
   buzz(20); chime([1180], .06);
 });

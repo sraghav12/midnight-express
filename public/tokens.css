@@ -1,105 +1,84 @@
 /* ===========================================================================
    MIDNIGHT EXPRESS — design system
-   Art-deco departure board. Brass on deep ink.
+   A transit map on paper. Thick lines, white stations with a black ring, one
+   colour per train, nothing glows. References: Mini Metro, Vignelli's 1972
+   New York subway map, London Underground signage.
+
+   Typeface: Cabin (SIL OFL, self-hosted, variable 400–700). A humanist sans in
+   the Johnston / Gill lineage — the letterforms of railway signage — and not a
+   default anywhere. Loaded from /fonts so the board works with no network.
 
    Two viewing distances, so two type scales:
      --fp-*  phone, arm's length (~40cm)
      --fb-*  board, across a room (~3m)
-
-   No webfonts on purpose: venue wifi is a liability and a missing font at
-   judging time is a self-inflicted wound. The deco feel comes from letter-
-   spacing, uppercase, rules and tabular numerals, not from a download.
    =========================================================================== */
 
-:root {
-  /* ---- ground ---- */
-  --ink-900:#08070C;      /* page */
-  --ink-800:#0E0C15;      /* panel */
-  --ink-700:#16131F;      /* raised card */
-  --ink-600:#211C2E;      /* border, cold rail */
-  --ink-500:#31294380;    /* busy rail */
+@font-face{
+  font-family:"Cabin";
+  src:url("/fonts/cabin.woff2") format("woff2");
+  font-weight:400 700;
+  font-style:normal;
+  font-display:swap;
+}
 
-  /* ---- brass ---- */
-  --brass-300:#F7DC98;
-  --brass-400:#F0C462;
-  --brass-500:#E0A93F;
-  --brass-700:#8A6A2C;    /* 4.0:1 -- borders and large text ONLY */
-  --brass-900:#3A2D14;
+:root{
+  /* ---- paper ---- */
+  --paper:#F3EFE6;        /* page */
+  --paper-2:#EAE5D9;      /* sidebar, panels */
+  --paper-3:#D9D3C5;      /* rules, free track */
+  --white:#FFFFFF;        /* stations, cards */
 
-  /* ---- text ---- */
-  --paper:#F4EDDC;
-  --paper-dim:#B0A791;
-  --paper-faint:#6E6757;   /* 3.6:1 -- large/decorative text and borders ONLY */
+  /* ---- ink ---- */
+  --ink:#1B1B1B;          /* text, rings, rails' outline */
+  --ink-2:#5B574F;        /* secondary text */
+  --ink-3:#8E897E;        /* faint text */
 
   /* ---- signals ---- */
-  --signal-red:#FF5470;   /* contested track */
-  --signal-green:#25D9A0; /* arrived */
-  --signal-amber:#FFB24C; /* held */
-  --agent:#B98CFF;        /* the Grok train */
+  --red:#E03A2F;          /* contested, held, the auction screen */
+  --green:#12945F;        /* home, the central dispatcher */
+  --amber:#E9A21B;        /* coasting */
+  --agent:#7A4BC8;        /* the rival's label on the scoreboard */
 
-  /* ---- type scale: phone ---- */
-  --fp-eyebrow:11px;
-  --fp-micro:12px;
-  --fp-body:15px;
-  --fp-lg:17px;
-  --fp-xl:21px;
-  --fp-display:30px;
-  --fp-huge:46px;
-  --fp-bid:66px;
+  /* ---- type ---- */
+  --sans:"Cabin", "Gill Sans", "Trebuchet MS", ui-sans-serif, system-ui, sans-serif;
 
-  /* ---- type scale: board ---- */
-  --fb-eyebrow:13px;
-  --fb-body:16px;
-  --fb-lg:22px;
-  --fb-xl:30px;
-  --fb-display:44px;
-  --fb-huge:74px;
-  --fb-score:96px;
+  /* phone */
+  --fp-micro:12px; --fp-body:16px; --fp-lg:18px; --fp-xl:22px;
+  --fp-display:34px; --fp-huge:52px; --fp-bid:96px;
 
-  /* ---- tracking ---- */
-  --track-label:.22em;
-  --track-display:.10em;
-  --track-tight:.02em;
+  /* board */
+  --fb-micro:13px; --fb-body:17px; --fb-lg:22px; --fb-xl:30px;
+  --fb-display:40px; --fb-huge:72px; --fb-score:104px;
 
   /* ---- space (4pt) ---- */
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px;
 
-  /* ---- radius ---- */
-  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-pill:999px;
-
-  /* ---- touch ---- */
-  --touch-min:56px;       /* never smaller: thumb target on a phone being shaken */
-
-  --serif: ui-serif, Georgia, "Times New Roman", serif;
-  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* ---- shape ---- */
+  --r-sm:4px; --r-md:6px;       /* square-ish, like signage plates */
+  --line:2px;                   /* the one border width */
+  --touch-min:56px;             /* never smaller: a thumb on a phone being shaken */
 }
 
 /* --------------------------------------------------------------- primitives */
 .eyebrow{
-  font-size:var(--fp-eyebrow); letter-spacing:var(--track-label);
-  text-transform:uppercase; color:var(--paper-dim); font-weight:600;
+  font-size:var(--fp-micro); font-weight:700; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--ink-2);
 }
-.display{ font-family:var(--serif); letter-spacing:var(--track-display); }
-.num{ font-variant-numeric:tabular-nums; }
+.num{ font-variant-numeric:tabular-nums lining-nums; }
 
-/* deco rule: a hairline with a brass segment sitting on it */
-.rule{ position:relative; height:1px; background:var(--ink-600); }
-.rule::after{
-  content:""; position:absolute; left:0; top:-1px; width:56px; height:3px; background:var(--brass-500);
-}
-
-.card{ background:var(--ink-700); border:1px solid var(--ink-600); border-radius:var(--r-md); }
+.card{ background:var(--white); border:var(--line) solid var(--ink); border-radius:var(--r-md); }
 
 .btn{
-  min-height:var(--touch-min); width:100%; border:0; border-radius:var(--r-md);
-  background:var(--brass-500); color:#241A06; font-weight:700;
-  font-size:var(--fp-lg); letter-spacing:.05em; font-family:var(--sans);
+  min-height:var(--touch-min); width:100%; border:var(--line) solid var(--ink); border-radius:var(--r-md);
+  background:var(--ink); color:var(--white); font-weight:700; font-size:var(--fp-lg);
+  font-family:var(--sans); cursor:pointer;
 }
-.btn:active{ background:var(--brass-400); }
-.btn--ghost{ background:transparent; border:1px solid var(--ink-600); color:var(--paper-dim); font-weight:500; }
+.btn:active{ background:var(--ink-2); border-color:var(--ink-2); }
+.btn--ghost{ background:transparent; color:var(--ink); }
+.btn--ghost:active{ background:var(--paper-3); border-color:var(--ink); }
 
 /* focus is not optional -- judges may tab through on a laptop */
-:where(button,input,a):focus-visible{ outline:2px solid var(--brass-400); outline-offset:2px; }
+:where(button,input,a):focus-visible{ outline:3px solid var(--red); outline-offset:2px; }
 
 @media (prefers-reduced-motion: reduce){
   *{ animation-duration:.01ms !important; transition-duration:.01ms !important; }

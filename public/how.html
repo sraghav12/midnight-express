@@ -3,103 +3,110 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#08070C">
+<meta name="theme-color" content="#F3EFE6">
 <title>How to play — Midnight Express</title>
 <link rel="stylesheet" href="/tokens.css">
 <style>
   *{box-sizing:border-box}
-  html,body{margin:0;background:var(--ink-900);color:var(--paper)}
+  html,body{margin:0;background:var(--paper);color:var(--ink)}
   body{font-family:var(--sans);font-size:var(--fp-body);line-height:1.5;
        padding:calc(env(safe-area-inset-top) + 20px) 20px calc(env(safe-area-inset-bottom) + 28px);max-width:720px;margin:0 auto}
-  h1{font-family:var(--serif);font-size:var(--fp-display);letter-spacing:.18em;text-transform:uppercase;color:var(--brass-400);margin:6px 0 4px;line-height:1.15}
-  .tag{color:var(--paper-dim);margin:0 0 22px;font-size:var(--fp-lg)}
-  .tag b{color:var(--paper)}
-  ol{list-style:none;padding:0;margin:0 0 22px;display:flex;flex-direction:column;gap:12px}
-  li{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;background:var(--ink-700);border:1px solid var(--ink-600);border-radius:var(--r-md);padding:14px 14px 14px 12px}
-  .n{font-family:var(--serif);font-size:30px;line-height:1;color:var(--brass-500);padding-top:2px;text-align:center}
-  li h2{margin:0 0 4px;font-size:var(--fp-lg);font-weight:600}
-  li p,.txt p{margin:0;color:var(--paper-dim)}
-  li p b,.txt b,.leg b{color:var(--paper);font-weight:600}
-  .rule{position:relative;height:1px;background:var(--ink-600);margin:26px 0 20px}
-  .rule::after{content:"";position:absolute;left:0;top:-1px;width:56px;height:3px;background:var(--brass-500)}
-  .k{font-size:var(--fp-eyebrow);letter-spacing:var(--track-label);text-transform:uppercase;color:var(--paper-dim);font-weight:600;margin:0 0 10px}
-  h3{font-family:var(--serif);font-size:var(--fp-title);color:var(--paper);margin:0 0 10px;font-weight:600}
+  h1{font-size:40px;font-weight:700;letter-spacing:-.01em;margin:4px 0 6px;line-height:1}
+  .tag{color:var(--ink-2);margin:0 0 22px;font-size:var(--fp-lg)}
+  .tag b{color:var(--ink)}
+  ol{list-style:none;padding:0;margin:0 0 22px;display:flex;flex-direction:column;gap:10px}
+  li{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;background:var(--white);
+     border:var(--line) solid var(--ink);border-radius:var(--r-md);padding:14px 14px 14px 12px}
+  .n{font-size:30px;font-weight:700;line-height:1;padding-top:2px;text-align:center}
+  li h2{margin:0 0 4px;font-size:var(--fp-lg);font-weight:700}
+  li p,.txt p{margin:0;color:var(--ink-2)}
+  li p b,.txt b,.leg b{color:var(--ink);font-weight:700}
+  .rule{height:var(--line);background:var(--ink);margin:26px 0 20px}
+  .k{margin:0 0 8px}
+  h3{font-size:var(--fp-xl);margin:0 0 10px;font-weight:700}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
-  .card{background:var(--ink-700);border:1px solid var(--ink-600);border-radius:var(--r-md);padding:12px 14px}
+  .card{padding:12px 14px}
   .card b{display:block;font-size:var(--fp-body);margin-bottom:2px}
-  .card span{color:var(--paper-dim);font-size:var(--fp-micro)}
-  .card .red{color:var(--signal-red)} .card .green{color:var(--signal-green)} .card .agent{color:var(--agent)} .card .brass{color:var(--brass-400)}
-  .shot{display:block;border:1px solid var(--ink-600);border-radius:var(--r-md);overflow:hidden;background:#000;margin:0 0 12px}
+  .card span{color:var(--ink-2);font-size:var(--fp-micro)}
+  .card .red{color:var(--red)} .card .green{color:var(--green)} .card .agent{color:var(--agent)}
+  .shot{display:block;border:var(--line) solid var(--ink);border-radius:var(--r-md);overflow:hidden;background:var(--white);margin:0 0 12px}
   .shot img{display:block;width:100%;height:auto}
-  .cap{color:var(--paper-faint);font-size:var(--fp-micro);margin:-4px 0 14px}
-  .leg{list-style:none;padding:0;margin:0 0 6px;display:grid;grid-template-columns:1fr;gap:8px}
-  .leg li{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:start;background:none;border:0;padding:0;border-radius:0}
-  .sw{width:22px;height:22px;border-radius:50%;margin-top:2px;border:2px solid transparent}
-  .sw.track{border-radius:4px;height:8px;margin-top:8px}
-  .leg li span{color:var(--paper-dim)}
+  .cap{color:var(--ink-2);font-size:var(--fp-micro);margin:-4px 0 14px}
+  .leg{list-style:none;padding:0;margin:0 0 6px;display:grid;grid-template-columns:1fr;gap:10px}
+  .leg li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;background:none;border:0;padding:0;border-radius:0}
+  .leg li span{color:var(--ink-2)}
+  .sw{width:26px;height:26px;margin-top:0}
+  .sw.station{border-radius:50%;background:var(--white);border:3px solid var(--ink);width:22px;height:22px;margin:2px}
+  .sw.track{border-radius:5px;height:10px;margin-top:8px;width:30px}
+  .sw.track.free{background:var(--paper-3)}
+  .sw.track.busy{background:#0072BC}
+  .sw.track.hot{background:repeating-linear-gradient(90deg,var(--red) 0 8px,var(--white) 8px 14px)}
+  .sw.pill{border-radius:99px;width:30px;height:16px;margin-top:5px;background:#F28C00;border:2px solid var(--ink)}
+  .sw.pill.held{border-color:var(--red)} .sw.pill.home{border-color:var(--green);opacity:.5}
+  .sw.pill.agent{background:var(--agent);border-color:transparent;width:22px;height:12px;margin:7px 4px}
+  .sw.pa{background:var(--ink);border-radius:var(--r-sm);width:30px;height:16px;margin-top:5px}
   .phones{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:6px}
   .phones .shot{margin:0 0 6px}
   .phones .cap{margin:0}
-  .btn{display:flex;align-items:center;justify-content:center;min-height:var(--touch-min);width:100%;border-radius:var(--r-md);
-       background:var(--brass-500);color:#241A06;font-weight:700;font-size:var(--fp-lg);text-decoration:none;letter-spacing:.04em;margin-top:22px}
-  .fine{color:var(--paper-faint);font-size:var(--fp-micro);text-align:center;margin:14px 0 0}
-  .fine a{color:var(--paper-dim)}
+  a.btn{display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:22px}
+  .fine{color:var(--ink-3);font-size:var(--fp-micro);text-align:center;margin:14px 0 0}
+  .fine a{color:var(--ink-2)}
   @media (min-width:600px){.leg{grid-template-columns:1fr 1fr;column-gap:18px}}
 </style>
 </head>
 <body>
-  <div class="k">How to play</div>
+  <div class="eyebrow k">How to play</div>
   <h1>Midnight Express</h1>
   <p class="tag">Everyone in the room drives a train. <b>There isn't enough track.</b> Get home before midnight.</p>
 
   <ol>
     <li><div class="n">1</div><div><h2>Board</h2><p>Type a name, tap <b>Board the train</b>. You get a train, a destination and <b>100 tokens</b>. The run starts a few seconds after the first player joins — you can also join one already going.</p></div></li>
     <li><div class="n">2</div><div><h2>Pick your track</h2><p>Your train moves on its own. Before each junction, tap the track you want next. <b>Fastest</b> is the shortest way home; <b>Occupied</b> means someone's on it. You can choose while still moving.</p></div></li>
-    <li><div class="n">3</div><div><h2>When your phone takes over — bid</h2><p>Two trains want the same track. You have <b>8 seconds</b>. Drag the slider or tap <b>25% · 50% · All in</b>. Bids are sealed — nobody sees yours. <b>Pass</b> (or not answering) bids zero.</p></div></li>
+    <li><div class="n">3</div><div><h2>When your phone turns red — bid</h2><p>Two trains want the same track. You have <b>8 seconds</b>. Drag the slider or tap <b>25% · 50% · All in</b>. Bids are sealed — nobody sees yours. <b>Pass</b> (or not answering) bids zero.</p></div></li>
     <li><div class="n">4</div><div><h2>Highest bid goes first…</h2><p>…but pays the <b>second-highest</b> price. So bidding what the track is really worth to you is always your best move. If you lose, you wait — and the winner's payment is <b>split among the losers</b>.</p></div></li>
-    <li><div class="n">5</div><div><h2>Get home</h2><p>When everyone's in, the board shows how the room did against <b>one central dispatcher</b> with full information. Then tap <b>View this run on Solana</b> — every auction you were in is a real transaction your train signed.</p></div></li>
+    <li><div class="n">5</div><div><h2>Get home</h2><p>When everyone's in, the board shows how the room did against <b>one central dispatcher</b> with full information. If the chain is on, tap <b>View this run on Solana</b> — every auction you were in is a real transaction your train signed.</p></div></li>
   </ol>
 
   <div class="rule"></div>
-  <div class="k">The big screen</div>
+  <div class="eyebrow k">The big screen</div>
   <h3>Reading the dispatch board</h3>
-  <a class="shot" href="/img/board-contested.jpg" target="_blank" rel="noopener"><img src="/img/board-contested.jpg" alt="The dispatch board with four contested tracks glowing red" loading="lazy"></a>
-  <p class="cap">Four tracks contested at once, one second after departure. Tap to enlarge.</p>
+  <a class="shot" href="/img/board-contested.jpg" target="_blank" rel="noopener"><img src="/img/board-contested.jpg" alt="The dispatch board with contested tracks striped red" loading="lazy"></a>
+  <p class="cap">Contested track shortly after departure. Tap to enlarge.</p>
   <ul class="leg">
-    <li><div class="sw" style="background:#E0A93F"></div><span><b>Stations</b> are the brass rings — Pittsburgh neighbourhoods. The white clock top-right counts up from departure; a run lasts <b>3 minutes</b>, or ends early when everyone's home.</span></li>
-    <li><div class="sw track" style="background:#4B4068"></div><span><b>Grey track</b> has a train on it. Dark track is free.</span></li>
-    <li><div class="sw track" style="background:#FF5470;box-shadow:0 0 12px #FF5470"></div><span><b>Red, pulsing track</b> is being auctioned right now. The chip above it says who's bidding.</span></li>
-    <li><div class="sw" style="background:#7CE04A"></div><span><b>Big dots with a name</b> are players — your colour matches your row in the Trains list. Small unlabelled dots are freight and AI trains.</span></li>
-    <li><div class="sw" style="border-color:#FF5470"></div><span><b>Red ring</b> around a train: held at a signal, waiting for the track to clear.</span></li>
-    <li><div class="sw" style="border-color:#25D9A0"></div><span><b>Green ring</b>: home.</span></li>
-    <li><div class="sw" style="background:var(--agent)"></div><span><b>The purple train</b> is the AI rival, named after the model driving it (K2 today). Same rules, same budget.</span></li>
-    <li><div class="sw" style="background:var(--brass-700)"></div><span><b>Bottom line</b> is the dispatcher's PA — also spoken aloud. It calls every contest, every settlement and every arrival.</span></li>
+    <li><div class="sw station"></div><span><b>Stations</b> are the white circles — Pittsburgh neighbourhoods. The bigger ring is Oakland, where five tracks meet. The clock top-right counts up from departure; a run lasts <b>3 minutes</b>, or ends early when everyone's home.</span></li>
+    <li><div class="sw track free"></div><span><b>Pale track</b> is free. <b>Coloured track</b> has that train on it — the colour is the train's.</span></li>
+    <li><div class="sw track hot"></div><span><b>Red striped track</b> is being auctioned right now. The label on it says who's bidding.</span></li>
+    <li><div class="sw pill"></div><span><b>Pills with a name</b> are players — your colour matches your row in the Trains list. Small unnamed pills are freight and AI trains.</span></li>
+    <li><div class="sw pill held"></div><span><b>Red outline</b> on a train: held at a signal, waiting for the track to clear.</span></li>
+    <li><div class="sw pill home"></div><span><b>Green outline</b>, faded: home.</span></li>
+    <li><div class="sw pill agent"></div><span><b>The AI rival</b> is the train named after the model driving it (K2, Llama, Grok…). Same rules, same budget.</span></li>
+    <li><div class="sw pa"></div><span><b>Black strip</b>, bottom left, is the dispatcher's PA — also spoken aloud. It calls every contest, every settlement and every arrival.</span></li>
   </ul>
-  <p class="txt" style="color:var(--paper-dim);margin:10px 0 0"><b>Right column:</b> the QR to join · <b>Contested track</b> — every live auction with its countdown · <b>Trains</b> — everyone's token balance. A red edge means that train is bidding or held; green means home; faded rows aren't human.</p>
+  <p class="txt" style="color:var(--ink-2);margin:10px 0 0"><b>Right column:</b> the QR to join · <b>Contested track</b> — every live auction with its countdown · <b>Trains</b> — everyone's token balance. A red edge means that train is bidding or held; green means home; grey rows aren't human.</p>
 
   <div class="rule"></div>
-  <div class="k">Your phone</div>
+  <div class="eyebrow k">Your phone</div>
   <h3>Three screens, in order</h3>
   <div class="phones">
     <div><a class="shot" href="/img/phone-drive.jpg" target="_blank" rel="noopener"><img src="/img/phone-drive.jpg" alt="Driving screen" loading="lazy"></a><p class="cap"><b>Driving.</b> Your route and tokens up top. Tap a track to choose it. Hold the bottom button to run; let go to coast.</p></div>
-    <div><a class="shot" href="/img/phone-bid.jpg" target="_blank" rel="noopener"><img src="/img/phone-bid.jpg" alt="Bidding screen" loading="lazy"></a><p class="cap"><b>Bidding.</b> The red bar is your 8 seconds. Slide, or tap a preset. It says who else wants the track.</p></div>
+    <div><a class="shot" href="/img/phone-bid.jpg" target="_blank" rel="noopener"><img src="/img/phone-bid.jpg" alt="Bidding screen" loading="lazy"></a><p class="cap"><b>Bidding.</b> The white bar is your 8 seconds. Slide, or tap a preset. It says who else wants the track.</p></div>
     <div><a class="shot" href="/img/phone-end.jpg" target="_blank" rel="noopener"><img src="/img/phone-end.jpg" alt="Arrival screen" loading="lazy"></a><p class="cap"><b>Arrived</b> (or <b>Stranded</b> at midnight). Your delay, auctions, tokens, and the link to your bids on Solana.</p></div>
   </div>
-  <p class="txt" style="color:var(--paper-dim);margin:10px 0 0"><b>Coasting</b> is the quiet move: your train runs at full speed until you touch <b>Hold to run</b>. After that, hold to run and let go to crawl — slower, and it counts as delay, but sometimes cheaper than paying for a contested track.</p>
+  <p class="txt" style="color:var(--ink-2);margin:10px 0 0"><b>Coasting</b> is the quiet move: your train runs at full speed until you touch <b>Hold to run</b>. After that, hold to run and let go to crawl — slower, and it counts as delay, but sometimes cheaper than paying for a contested track.</p>
 
   <div class="rule"></div>
-  <div class="k">When the run ends</div>
+  <div class="eyebrow k">When the run ends</div>
   <h3>The scoreboard</h3>
   <a class="shot" href="/img/board-score.jpg" target="_blank" rel="noopener"><img src="/img/board-score.jpg" alt="Scoreboard comparing the room against one central dispatcher" loading="lazy"></a>
   <p class="cap">Left replay: what you all did. Right replay: the same trains, same starts, routed by one dispatcher who knows everything.</p>
-  <p class="txt" style="color:var(--paper-dim)"><b>Total delay, all trains</b> adds up every second every train spent held or coasting. The big line is the verdict — how many times slower the room was than a single dispatcher. Below it, how the AI rival did against the average human, and a short recap written live by Grok.</p>
+  <p class="txt" style="color:var(--ink-2)"><b>Total delay, all trains</b> adds up every second every train spent held or coasting. The big line is the verdict — how many times slower the room was than a single dispatcher. Below it, how the AI rival did against the average human, and a short recap written live by the dispatcher's model.</p>
 
   <div class="rule"></div>
-  <div class="k">Good to know</div>
+  <div class="eyebrow k">Good to know</div>
   <div class="grid">
-    <div class="card"><b class="brass">100 tokens, whole run</b><span>Spend early or save for the bottleneck — Oakland is where everyone collides.</span></div>
+    <div class="card"><b>100 tokens, whole run</b><span>Spend early or save for the bottleneck — Oakland is where everyone collides.</span></div>
     <div class="card"><b class="red">Held at signal</b><span>You lost a bid or the track's taken. You'll go when it clears, or pick another way.</span></div>
-    <div class="card"><b class="agent">The purple train</b><span>An AI rival routed by a small model running locally. It plays by the same rules you do.</span></div>
+    <div class="card"><b class="agent">The rival</b><span>An AI train routed by a small model running locally. It plays by the same rules you do.</span></div>
     <div class="card"><b class="green">The voice</b><span>That's the dispatcher on the PA — an AI phrasing what's happening on the network live.</span></div>
   </div>
 
