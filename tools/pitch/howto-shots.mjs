@@ -1,5 +1,5 @@
 // Captures real screenshots for the how-to-play page from an isolated server.
-// usage: node scripts/pitch/howto-shots.mjs http://localhost:8099 public/img
+// usage: node tools/pitch/howto-shots.mjs http://localhost:8099 public/img   (BOT_NAMES=Priya,Marcus,... for named bots)
 import { chromium } from "playwright";
 import { spawn } from "node:child_process";
 const BASE = process.argv[2] || "http://localhost:8099";
@@ -24,7 +24,8 @@ while (Date.now() - t0 < 270_000) {
   if (!departed && phase === "en route") { departed = Date.now(); log("departed"); }
   if (departed && !shots["phone-drive"] && Date.now() - departed > 6000 && (await phone.evaluate(() => document.querySelector("#auction")?.classList.contains("hide") && document.querySelector("#steerWrap")?.offsetParent !== null && document.querySelectorAll("#steerWrap button").length > 0))) await shot(phone, "phone-drive");
   if (departed && !shots["board-run"] && Date.now() - departed > 30_000) await shot(board, "board-run");
-  if (departed && !shots["board-contested"] && (await board.locator("#aucList .auc").count()) > 0) { await board.waitForTimeout(400); await shot(board, "board-contested"); }
+  // not the departure pile-up: wait for a contest once the trains have spread out
+  if (departed && !shots["board-contested"] && Date.now() - departed > 12_000 && (await board.locator("#aucList .auc").count()) > 0) { await board.waitForTimeout(400); await shot(board, "board-contested"); }
   if (!shots["phone-bid"] && (await phone.evaluate(() => { const els=[...document.querySelectorAll("*")].filter(e=>e.children.length===0&&/Track contested/.test(e.textContent)); return els.some(e=>e.offsetParent!==null); }))) { await phone.waitForTimeout(700); await shot(phone, "phone-bid"); }
   const end = await txt(phone, "#endTitle"); if (!shots["phone-end"] && (end === "Arrived" || end === "Stranded") && await vis(phone, "#endTitle")) { await phone.waitForTimeout(600); await shot(phone, "phone-end"); }
   if (!shots["board-score"] && (await txt(board, "#verdict")).length > 0) { await board.waitForTimeout(2500); await shot(board, "board-score"); }

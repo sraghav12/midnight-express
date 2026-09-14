@@ -5,6 +5,9 @@ import WebSocket from "ws";
 
 const N = Number(process.argv[2] || 10);
 const BASE = process.argv[3] || `ws://localhost:${process.env.PORT || 8080}`;
+// BOT_NAMES="Priya,Marcus,Jin" gives the fake phones human names (screenshots, demos).
+const NAMES = (process.env.BOT_NAMES || "").split(",").map((s) => s.trim()).filter(Boolean);
+const botName = (i) => NAMES[i] || `Bot${i + 1}`;
 
 const stats = { joined: 0, auctions: 0, bids: 0, settled: 0, arrived: 0, errors: 0, states: 0 };
 const latencies = [];
@@ -14,7 +17,7 @@ function spawn(i) {
   const ws = new WebSocket(`${BASE}/?role=player`);
   let me = null, lastState = 0;
 
-  ws.on("open", () => ws.send(JSON.stringify({ t: "join", name: `Bot${i + 1}` })));
+  ws.on("open", () => ws.send(JSON.stringify({ t: "join", name: botName(i) })));
   ws.on("error", (e) => { stats.errors++; if (stats.errors < 3) console.error("  ws error:", e.message); });
   ws.on("message", (raw) => {
     const m = JSON.parse(raw);
