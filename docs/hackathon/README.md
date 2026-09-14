@@ -1,6 +1,6 @@
 # Hackathon archive — HackCMU 2026 (Sept 11–12, 2026)
 
-These five documents are the working papers from the 30-hour build, kept **verbatim**.
+These five documents are the working papers from the overnight build (Friday 10:30 PM to the Saturday 4 PM deadline), kept **verbatim**.
 They reference the venue, sponsors, a since-retired public host and file paths as they
 were that weekend. They are here because they show how the project was actually run:
 lane assignments, abort gates, the pre-flight checklist, and the seventeen bugs that

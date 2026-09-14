@@ -17,7 +17,7 @@ ends, the whole thing is replayed side by side against a **centralized dispatche
 information**, and the room watches how much delay its own self-interest cost. Optionally,
 every auction is **settled on Solana devnet**, co-signed by the trains that bid in it.
 
-Built in 30 hours at HackCMU 2026, then hardened: a 56-test suite, a deterministic
+Built in one night at HackCMU 2026 (Sept 11–12), then hardened: a 56-test suite, a deterministic
 evaluation harness with ablations, pluggable model backends, CI and a Docker image.
 
 ![The dispatch board during a contested auction](public/img/board-contested.jpg)
